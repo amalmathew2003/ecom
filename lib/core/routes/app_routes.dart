@@ -3,7 +3,8 @@ import 'package:ecom/features/auth/ui/login_page.dart';
 import 'package:ecom/features/auth/ui/register_page.dart';
 import 'package:ecom/features/splash/controller/splach_controller.dart';
 import 'package:ecom/features/splash/ui/spalch_screen.dart';
-import 'package:ecom/features/user/home/user_home.dart';
+import 'package:ecom/features/user/home/ui/user_home.dart';
+import 'package:ecom/features/user/nav/ui/buttom_nav.dart';
 
 import 'package:get/get.dart';
 
@@ -11,6 +12,7 @@ class AppRoutes {
   static const splash = '/';
   static const login = '/login';
   static const register = '/register';
+  static const usernav = '/user-nav';
   static const userHome = '/user-home';
   static const adminHome = '/admin-home';
 
@@ -41,7 +43,8 @@ class AppRoutes {
     ),
 
     /// 🔹 User Home
-    GetPage(name: userHome, page: () => const UserHome()),
+    GetPage(name: usernav, page: () => const UserRootPage()),
+    GetPage(name: userHome, page: () => UserHome()),
 
     /// 🔹 Admin Home
     GetPage(name: adminHome, page: () => const AdminHome()),

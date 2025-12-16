@@ -12,14 +12,10 @@ class AdminProductController extends GetxController {
     required String description,
     required double price,
     required File image,
+    required String category,
   }) async {
     try {
       isLoading.value = true;
-
-      final user = supabase.auth.currentUser;
-      if (user == null) {
-        throw Exception('User not logged in');
-      }
 
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.png';
       final bytes = await image.readAsBytes();
@@ -44,12 +40,13 @@ class AdminProductController extends GetxController {
         'description': description,
         'price': price,
         'image_url': imageUrl,
+        'category': category, // ✅
       });
 
       Get.snackbar('Success', 'Product added');
     } catch (e) {
-      print('Add product error: $e');
       Get.snackbar('Error', e.toString());
+      print(" Error adding product: $e ");
     } finally {
       isLoading.value = false;
     }

@@ -1,17 +1,17 @@
 class ProductModel {
-  final String id;
+  final int id;
   final String name;
-  final String description;
+  final String? description;
   final double price;
-  final String imageUrl;
+  final String? imageUrl;
   final String category;
 
   ProductModel({
     required this.id,
     required this.name,
-    required this.description,
+    this.description,
     required this.price,
-    required this.imageUrl,
+    this.imageUrl,
     required this.category,
   });
 
@@ -19,10 +19,10 @@ class ProductModel {
     return ProductModel(
       id: json['id'],
       name: json['name'],
-      description: json['description'] ?? '',
+      description: json['description'],
       price: (json['price'] as num).toDouble(),
-      imageUrl: json['image_url'] ?? '',
-      category: json['category'] ?? 'All',
+      imageUrl: json['image_url'],
+      category: json['category'],
     );
   }
 }

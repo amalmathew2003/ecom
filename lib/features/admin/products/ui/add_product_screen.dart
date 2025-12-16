@@ -13,6 +13,8 @@ class AdminAddProductPage extends StatelessWidget {
   final nameCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final priceCtrl = TextEditingController();
+  final categories = ['Electronics', 'Fashion', 'Shoes', 'Accessories'];
+  final RxString selectedCategory = 'Electronics'.obs;
 
   final Rx<File?> selectedImage = Rx<File?>(null);
 
@@ -71,6 +73,20 @@ class AdminAddProductPage extends StatelessWidget {
             }),
 
             const SizedBox(height: 20),
+            Obx(() {
+              return DropdownButtonFormField<String>(
+                value: selectedCategory.value,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: categories
+                    .map(
+                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                    )
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) selectedCategory.value = val;
+                },
+              );
+            }),
 
             TextField(
               controller: nameCtrl,
@@ -110,6 +126,7 @@ class AdminAddProductPage extends StatelessWidget {
                             description: descCtrl.text.trim(),
                             price: double.parse(priceCtrl.text),
                             image: selectedImage.value!,
+                            category: selectedCategory.value,
                           );
                         },
                   child: controller.isLoading.value

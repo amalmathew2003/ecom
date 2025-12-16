@@ -1,4 +1,5 @@
 import 'package:ecom/features/admin/products/ui/add_product_screen.dart';
+import 'package:ecom/features/auth/data/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,9 +8,19 @@ class AdminHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = AuthService();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              auth.logout();
+              Get.offAllNamed('/login');
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -19,10 +30,7 @@ class AdminHome extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               'Welcome Admin',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(

@@ -36,7 +36,7 @@ class SplashController extends GetxController {
     if (profile?['role'] == 'admin') {
       Get.offAllNamed(AppRoutes.adminHome);
     } else {
-      Get.offAllNamed(AppRoutes.userHome);
+      Get.offAllNamed(AppRoutes.usernav);
     }
   }
 }
