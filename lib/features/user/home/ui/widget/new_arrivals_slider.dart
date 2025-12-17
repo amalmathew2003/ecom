@@ -35,6 +35,8 @@ class ProductCarousel extends StatelessWidget {
 
       return CarouselSlider(
         options: CarouselOptions(
+          autoPlayCurve: Curves.easeInOutCubic,
+
           height: carouselHeight,
           autoPlay: true,
           enlargeCenterPage: true,

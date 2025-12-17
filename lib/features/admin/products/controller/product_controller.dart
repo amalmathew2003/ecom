@@ -12,17 +12,19 @@ class AdminProductController extends GetxController {
     required String description,
     required double price,
     required File image,
-    required String category,
+    required String categoryId,
+    required String subCategoryId,
   }) async {
     try {
       isLoading.value = true;
 
+      /// =======================
+      /// UPLOAD IMAGE
+      /// =======================
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.png';
       final bytes = await image.readAsBytes();
 
-      await supabase.storage
-          .from('product-images')
-          .uploadBinary(
+      await supabase.storage.from('product-images').uploadBinary(
             'products/$fileName',
             bytes,
             fileOptions: const FileOptions(
@@ -35,18 +37,22 @@ class AdminProductController extends GetxController {
           .from('product-images')
           .getPublicUrl('products/$fileName');
 
+      /// =======================
+      /// INSERT PRODUCT
+      /// =======================
       await supabase.from('products').insert({
         'name': name,
         'description': description,
         'price': price,
         'image_url': imageUrl,
-        'category': category, // ✅
+        'category_id': categoryId,        // ✅ UUID
+        'sub_category_id': subCategoryId, // ✅ UUID
       });
 
-      Get.snackbar('Success', 'Product added');
+      Get.snackbar('Success', 'Product added successfully');
     } catch (e) {
       Get.snackbar('Error', e.toString());
-      print(" Error adding product: $e ");
+      print("Error adding product: $e");
     } finally {
       isLoading.value = false;
     }

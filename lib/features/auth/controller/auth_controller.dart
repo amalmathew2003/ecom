@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/auth_service.dart';
@@ -33,7 +34,30 @@ class AuthController extends GetxController {
         Get.offAllNamed(AppRoutes.usernav);
       }
     } catch (e) {
-      Get.snackbar('Login Failed', e.toString());
+      final message = e is AuthException
+          ? e.message
+          : e.toString().replaceAll('Exception:', '').trim();
+      Get.snackbar(
+        'Login Failed',
+        "$message\ncheck your credentials and try again.",
+        backgroundColor: const Color(0xFF1E293B), // dark slate
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 14,
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        icon: const Icon(
+          Icons.error_outline,
+          color: Color(0xFF818CF8), // indigo accent
+        ),
+        duration: const Duration(seconds: 3),
+      );
     } finally {
       isLoading.value = false;
     }
@@ -49,7 +73,30 @@ class AuthController extends GetxController {
       // New users are always normal users
       Get.offAllNamed(AppRoutes.userHome);
     } catch (e) {
-      Get.snackbar('Registration Failed', e.toString());
+      final message = e is AuthException
+          ? e.message
+          : e.toString().replaceAll('Exception:', '').trim();
+      Get.snackbar(
+        'Registration Failed',
+        "$message\nplease try again.",
+        backgroundColor: const Color(0xFF1E293B), // dark slate
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(26),
+        borderRadius: 14,
+        boxShadows: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .20),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        icon: const Icon(
+          Icons.error_outline,
+          color: Color(0xFF818CF8), // indigo accent
+        ),
+        duration: const Duration(seconds: 3),
+      );
     } finally {
       isLoading.value = false;
     }

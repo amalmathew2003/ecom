@@ -1,4 +1,5 @@
 import 'package:ecom/features/admin/products/ui/add_product_screen.dart';
+import 'package:ecom/features/admin/products/ui/category_add_screen.dart';
 import 'package:ecom/features/auth/data/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -46,6 +47,13 @@ class AdminHome extends StatelessWidget {
               label: const Text('Add Product'),
               onPressed: () {
                 Get.to(() => AdminAddProductPage());
+              },
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Add Category'),
+              onPressed: () {
+                Get.to(() => AdminAddCategoryPage());
               },
             ),
           ],

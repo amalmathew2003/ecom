@@ -17,14 +17,14 @@ class ProductController extends GetxController {
   }
 
   /// 🔹 Fetch products with optional category filter
-  Future<void> fetchProducts({String category = 'All'}) async {
+  Future<void> fetchProducts({String categoryId = 'all'}) async {
     try {
       isLoading.value = true;
 
       var query = supabase.from('products').select();
 
-      if (category != 'All') {
-        query = query.eq('category', category);
+      if (categoryId != 'all') {
+        query = query.eq('category_id', categoryId);
       }
 
       final response = await query.order('created_at', ascending: false);
@@ -43,7 +43,7 @@ class ProductController extends GetxController {
   Future<void> fetchNewArrivals() async {
     try {
       final sevenDaysAgo = DateTime.now()
-          .subtract(const Duration(days: 17))
+          .subtract(const Duration(days: 14))
           .toIso8601String();
 
       final response = await supabase
@@ -59,5 +59,36 @@ class ProductController extends GetxController {
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
+  }
+
+  Future<void> fetchProductsBySubCategory({
+    required String subCategoryId,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      final response = await supabase
+          .from('products')
+          .select()
+          .eq('sub_category_id', subCategoryId)
+          .order('created_at', ascending: false);
+
+      products.value = (response as List)
+          .map((e) => ProductModel.fromJson(e))
+          .toList();
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  //sort price low to high
+  void sortByPriceLowToHigh() {
+    products.sort((a, b) => a.price.compareTo(b.price));
+  }
+
+  void sortByPriceHighToLow() {
+    products.sort((a, b) => b.price.compareTo(a.price));
   }
 }
