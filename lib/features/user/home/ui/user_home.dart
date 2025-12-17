@@ -194,7 +194,10 @@ class UserHome extends StatelessWidget {
             /// ==========================
             /// 🔥 HERO / NEW ARRIVALS
             /// ==========================
-            ProductCarousel(),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ProductCarousel(),
+            ),
 
             /// ==========================
             /// 🔹 CATEGORIES
