@@ -47,7 +47,7 @@ class AuthController extends GetxController {
         borderRadius: 14,
         boxShadows: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.black.withValues(alpha: .25),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

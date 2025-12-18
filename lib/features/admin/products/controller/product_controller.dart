@@ -52,7 +52,6 @@ class AdminProductController extends GetxController {
       Get.snackbar('Success', 'Product added successfully');
     } catch (e) {
       Get.snackbar('Error', e.toString());
-      print("Error adding product: $e");
     } finally {
       isLoading.value = false;
     }

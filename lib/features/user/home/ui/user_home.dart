@@ -58,7 +58,7 @@ class UserHome extends StatelessWidget {
                         height: 50,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: Colors.blueAccent.withOpacity(0.1),
+                          color: Colors.blueAccent.withValues(alpha: .1),
                         ),
                         child: Center(
                           child: Text(
@@ -71,17 +71,7 @@ class UserHome extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // CircleAvatar(
-                      //   radius: 28,
-                      //   backgroundColor: Colors.black.withOpacity(0.80),
-                      //   child: Text(
-                      //     cat['name'][0].toUpperCase(),
-                      //     style: const TextStyle(
-                      //       color: Colors.white,
-                      //       fontSize: 22,
-                      //     ),
-                      //   ),
-                      // ),
+                     
                       const SizedBox(height: 8),
                       Text(
                         cat['name'],
@@ -192,7 +182,7 @@ class UserHome extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// ==========================
-            /// 🔥 HERO / NEW ARRIVALS
+            /// HERO / NEW ARRIVALS
             /// ==========================
             Padding(
               padding: const EdgeInsets.all(10.0),
@@ -361,7 +351,7 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

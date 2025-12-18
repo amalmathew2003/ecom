@@ -52,7 +52,7 @@ class RegisterPage extends StatelessWidget {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF312E81).withOpacity(0.1),
+                            color: const Color(0xFF312E81).withValues(alpha: .1),
                           ),
                           child: const Icon(
                             Icons.person_add_alt_1,

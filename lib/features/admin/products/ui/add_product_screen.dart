@@ -90,7 +90,7 @@ class AdminAddProductPage extends StatelessWidget {
               }
 
               return DropdownButtonFormField<String>(
-                value: selectedCategoryId.value,
+                initialValue: selectedCategoryId.value,
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: categoryCtrl.categories.map((cat) {
                   return DropdownMenuItem<String>(
@@ -117,7 +117,7 @@ class AdminAddProductPage extends StatelessWidget {
               }
 
               return DropdownButtonFormField<String>(
-                value: selectedSubCategoryId.value,
+                initialValue: selectedSubCategoryId.value,
                 decoration:
                     const InputDecoration(labelText: 'Sub Category'),
                 items: subCategoryCtrl.subCategories.map((sub) {

@@ -63,7 +63,7 @@ class AdminAddCategoryPage extends StatelessWidget {
               }
 
               return DropdownButtonFormField<String>(
-                value: selectedCategoryId.value,
+                initialValue: selectedCategoryId.value,
                 decoration: const InputDecoration(
                   labelText: 'Select Main Category',
                 ),
