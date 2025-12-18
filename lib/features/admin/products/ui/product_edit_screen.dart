@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:ecom/features/admin/products/controller/product_controller.dart';
-import 'package:ecom/features/admin/products/data/product_model.dart';
+import 'package:ecom/shared/models/product_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';

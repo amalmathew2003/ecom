@@ -1,7 +1,6 @@
 import 'package:ecom/features/user/cart/ui/cart_screen.dart';
 import 'package:ecom/features/user/home/ui/user_home.dart';
 import 'package:ecom/features/user/nav/controller/nav_controller.dart';
-import 'package:ecom/features/user/product/ui/product_screen.dart';
 import 'package:ecom/features/user/profile/ui/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,12 +12,7 @@ class UserRootPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final nav = Get.put(UserNavController());
 
-    final pages = [
-      UserHome(),
-      const ProductScreen(),
-      const CartScreen(),
-      const SerachScreen(),
-    ];
+    final pages = [UserHome(), const CartScreen(), const SerachScreen()];
 
     return Obx(
       () => Scaffold(
@@ -47,16 +41,15 @@ class UserRootPage extends StatelessWidget {
 
             items: [
               _navItem(Icons.home_rounded, 'Home', nav.currentIndex.value == 0),
-              _navItem(Icons.search, 'Search', nav.currentIndex.value == 1),
               _navItem(
                 Icons.shopping_cart_outlined,
                 'Cart',
-                nav.currentIndex.value == 2,
+                nav.currentIndex.value == 1,
               ),
               _navItem(
                 Icons.person_outline,
                 'Profile',
-                nav.currentIndex.value == 3,
+                nav.currentIndex.value == 2,
               ),
             ],
           ),

@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:ecom/features/admin/products/data/product_model.dart';
+import 'package:ecom/shared/models/product_model.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
