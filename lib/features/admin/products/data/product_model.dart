@@ -4,7 +4,8 @@ class ProductModel {
   final String description;
   final double price;
   final String imageUrl;
-  final String category;
+  final String categoryId;
+  final String subCategoryId;
 
   ProductModel({
     required this.id,
@@ -12,7 +13,8 @@ class ProductModel {
     required this.description,
     required this.price,
     required this.imageUrl,
-    required this.category,
+    required this.categoryId,
+    required this.subCategoryId,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -22,7 +24,8 @@ class ProductModel {
       description: json['description'] ?? '',
       price: (json['price'] as num).toDouble(),
       imageUrl: json['image_url'] ?? '',
-      category: json['category'] ?? 'All',
+      categoryId: json['category_id'],        // ✅ UUID
+      subCategoryId: json['sub_category_id'], // ✅ UUID
     );
   }
 }
