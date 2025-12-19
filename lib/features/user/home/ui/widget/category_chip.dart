@@ -26,7 +26,7 @@ class CategoryChip extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
-                    colors: [Color(0xFF111111), Color(0xFF333333)],
+                    colors: [Color.fromARGB(255, 211, 34, 34), Color(0xFF333333)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   )

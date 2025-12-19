@@ -6,6 +6,7 @@ import 'package:ecom/features/user/home/controller/usersubcategory_controller.da
 import 'package:ecom/features/user/home/ui/widget/category_chip.dart';
 import 'package:ecom/features/user/home/ui/widget/new_arrivals_slider.dart';
 import 'package:ecom/features/user/home/ui/widget/product_card.dart';
+import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,6 +24,7 @@ class UserHome extends StatelessWidget {
   /// Explore SHOW CATEGORY BOTTOM SHEET
   void _showCategorySheet(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: ColorConst.ivory,
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -58,7 +60,7 @@ class UserHome extends StatelessWidget {
                         height: 50,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: Colors.blueAccent.withValues(alpha: .1),
+                          color: ColorConst.navy,
                         ),
                         child: Center(
                           child: Text(
@@ -71,12 +73,15 @@ class UserHome extends StatelessWidget {
                           ),
                         ),
                       ),
-                     
+
                       const SizedBox(height: 8),
                       Text(
                         cat['name'],
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 13),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: ColorConst.textDark,
+                        ),
                       ),
                     ],
                   ),
@@ -92,6 +97,7 @@ class UserHome extends StatelessWidget {
   /// ==========================Show Filter CATEGORY BOTTOM SHEET
   void _showFilterSheet(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: ColorConst.card,
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -105,19 +111,27 @@ class UserHome extends StatelessWidget {
             children: [
               const Text(
                 'Sort & Filter',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: ColorConst.navy,
+                ),
               ),
               const SizedBox(height: 20),
 
               ListTile(
-                title: const Text('Price: Low to High'),
+                title: const Text(
+                  'Price: Low to High',
+                  style: TextStyle(color: ColorConst.textDark),
+                ),
                 onTap: () {
                   productCtrl.sortByPriceLowToHigh();
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                title: const Text('Price: High to Low'),
+                title: const Text('Price: High to Low',                  style: TextStyle(color: ColorConst.textDark),
+),
                 onTap: () {
                   productCtrl.sortByPriceHighToLow();
                   Navigator.pop(context);
@@ -133,45 +147,7 @@ class UserHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-
-      /// ==========================
-      /// APP BAR
-      /// ==========================
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFF0F172A), // dark slate
-        titleSpacing: 20,
-        title: const Text(
-          'E-Commerce',
-          style: TextStyle(
-            color: Color.fromARGB(255, 70, 84, 230), // indigo accent
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            letterSpacing: 0.4,
-          ),
-        ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              tooltip: 'Logout',
-              icon: const Icon(
-                Icons.logout_rounded,
-                color: Color.fromARGB(255, 70, 84, 230), // indigo accent
-              ),
-              onPressed: () async {
-                await auth.logout();
-                Get.offAllNamed(AppRoutes.login);
-              },
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: ColorConst.accent,
 
       /// ==========================
       /// BODY
@@ -181,6 +157,67 @@ class UserHome extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// ==========================
+            /// MODERN HEADER (REPLACES APP BAR)
+            /// ==========================
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 38, 16, 20),
+              decoration: BoxDecoration(
+                color: ColorConst.navy,
+
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(24),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  /// APP NAME
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'NeoMart',
+                        style: TextStyle(
+                          color: ColorConst.accent,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Welcome 👋',
+                        style: TextStyle(
+                          color: ColorConst.ivory.withValues(alpha: 0.8),
+                          fontSize: 24,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  /// LOGOUT BUTTON
+                  Container(
+                    decoration: BoxDecoration(
+                      color: ColorConst.ivory,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: IconButton(
+                      tooltip: 'Logout',
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: ColorConst.navy,
+                      ),
+                      onPressed: () async {
+                        await auth.logout();
+                        Get.offAllNamed(AppRoutes.login);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             /// ==========================
             /// HERO / NEW ARRIVALS
             /// ==========================

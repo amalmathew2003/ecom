@@ -7,6 +7,7 @@ import 'features/auth/controller/auth_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseConfig.init();
+
   runApp(const MyApp());
 }
 

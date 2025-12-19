@@ -4,6 +4,7 @@ import 'package:ecom/features/auth/ui/register_page.dart';
 import 'package:ecom/features/splash/controller/splach_controller.dart';
 import 'package:ecom/features/splash/ui/spalch_screen.dart';
 import 'package:ecom/features/user/home/ui/user_home.dart';
+import 'package:ecom/features/user/home/ui/widget/product_details_screen.dart';
 import 'package:ecom/features/user/nav/ui/buttom_nav.dart';
 
 import 'package:get/get.dart';
@@ -14,6 +15,7 @@ class AppRoutes {
   static const register = '/register';
   static const usernav = '/user-nav';
   static const userHome = '/user-home';
+  static const userproductdetils = '/user-home/product-details';
   static const adminHome = '/admin-home';
 
   static final pages = [

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-class SerachScreen extends StatelessWidget {
-  const SerachScreen({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

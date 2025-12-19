@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:ecom/shared/models/product_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -133,7 +134,9 @@ class AdminProductController extends GetxController {
 
       return true;
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return false;
     } finally {
       isLoading.value = false;
@@ -158,7 +161,9 @@ class AdminProductController extends GetxController {
       products.removeWhere((p) => p.id == productId);
       return true;
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return false;
     } finally {
       isLoading.value = false;

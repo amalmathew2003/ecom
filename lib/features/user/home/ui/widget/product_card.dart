@@ -1,5 +1,8 @@
+import 'package:ecom/features/user/home/ui/widget/product_details_screen.dart';
 import 'package:ecom/shared/models/product_model.dart';
+import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
@@ -11,15 +14,21 @@ class ProductCard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: () {
-        // TODO: Navigate to product detail
+        Get.to(
+          () => ProductDetailsScreen(product: product),
+          transition: Transition.fadeIn,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
       },
+
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ColorConst.bg,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Colors.red.withValues(alpha: 0.06),
               blurRadius: 14,
               offset: const Offset(0, 8),
             ),
@@ -39,7 +48,7 @@ class ProductCard extends StatelessWidget {
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey.shade200,
+                    color: Colors.red.shade200,
                     child: const Icon(Icons.image_not_supported),
                   ),
                 ),
@@ -57,6 +66,7 @@ class ProductCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
+                      color: ColorConst.accent,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -65,6 +75,8 @@ class ProductCard extends StatelessWidget {
                   Text(
                     '₹${product.price}',
                     style: const TextStyle(
+                      color: ColorConst.ivory,
+
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
