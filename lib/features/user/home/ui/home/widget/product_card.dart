@@ -1,4 +1,4 @@
-import 'package:ecom/features/user/home/ui/widget/product_details_screen.dart';
+import 'package:ecom/features/user/home/ui/product_details/product_details_screen.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +44,7 @@ class ProductCard extends StatelessWidget {
                   top: Radius.circular(18),
                 ),
                 child: Image.network(
-                  product.imageUrl,
+                  product.imageUrl.first,
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(

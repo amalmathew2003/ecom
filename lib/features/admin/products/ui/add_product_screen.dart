@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:ecom/features/admin/products/controller/category_add_controller.dart';
-import 'package:ecom/features/admin/products/controller/sub_category_controller.dart';
 import 'package:ecom/features/admin/products/controller/product_controller.dart';
+import 'package:ecom/features/admin/products/controller/sub_category_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,17 +21,21 @@ class AdminAddProductPage extends StatelessWidget {
   final RxnString selectedCategoryId = RxnString();
   final RxnString selectedSubCategoryId = RxnString();
 
-  final Rx<File?> selectedImage = Rx<File?>(null);
+  /// ✅ MULTIPLE IMAGES
+  final RxList<File> selectedImages = <File>[].obs;
 
-  Future<void> pickImage() async {
+  /// =======================
+  /// PICK MULTIPLE IMAGES
+  /// =======================
+  Future<void> pickImages() async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
+    final List<XFile> images =
+        await picker.pickMultiImage(imageQuality: 80);
 
-    if (image != null) {
-      selectedImage.value = File(image.path);
+    if (images.isNotEmpty) {
+      selectedImages.assignAll(
+        images.map((e) => File(e.path)).toList(),
+      );
     }
   }
 
@@ -48,7 +52,7 @@ class AdminAddProductPage extends StatelessWidget {
             /// =======================
             Obx(() {
               return GestureDetector(
-                onTap: pickImage,
+                onTap: pickImages,
                 child: Container(
                   height: 160,
                   width: double.infinity,
@@ -56,24 +60,59 @@ class AdminAddProductPage extends StatelessWidget {
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: selectedImage.value == null
+                  child: selectedImages.isEmpty
                       ? const Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.add_a_photo, size: 40),
                               SizedBox(height: 8),
-                              Text('Tap to select image'),
+                              Text('Tap to select images'),
                             ],
                           ),
                         )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            selectedImage.value!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+                      : GridView.builder(
+                          padding: const EdgeInsets.all(8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
                           ),
+                          itemCount: selectedImages.length,
+                          itemBuilder: (_, index) {
+                            return Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    selectedImages[index],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      selectedImages.removeAt(index);
+                                    },
+                                    child: const CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: Colors.black54,
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                 ),
               );
@@ -90,11 +129,11 @@ class AdminAddProductPage extends StatelessWidget {
               }
 
               return DropdownButtonFormField<String>(
-                initialValue: selectedCategoryId.value,
+                value: selectedCategoryId.value,
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: categoryCtrl.categories.map((cat) {
                   return DropdownMenuItem<String>(
-                    value: cat['id'].toString(), // ✅ UUID
+                    value: cat['id'].toString(),
                     child: Text(cat['name']),
                   );
                 }).toList(),
@@ -109,7 +148,7 @@ class AdminAddProductPage extends StatelessWidget {
             const SizedBox(height: 16),
 
             /// =======================
-            /// SUB CATEGORY DROPDOWN
+            /// SUB CATEGORY
             /// =======================
             Obx(() {
               if (selectedCategoryId.value == null) {
@@ -117,12 +156,12 @@ class AdminAddProductPage extends StatelessWidget {
               }
 
               return DropdownButtonFormField<String>(
-                initialValue: selectedSubCategoryId.value,
+                value: selectedSubCategoryId.value,
                 decoration:
                     const InputDecoration(labelText: 'Sub Category'),
                 items: subCategoryCtrl.subCategories.map((sub) {
                   return DropdownMenuItem<String>(
-                    value: sub['id'].toString(), // ✅ UUID
+                    value: sub['id'].toString(),
                     child: Text(sub['name']),
                   );
                 }).toList(),
@@ -167,7 +206,7 @@ class AdminAddProductPage extends StatelessWidget {
                   onPressed: productCtrl.isLoading.value
                       ? null
                       : () {
-                          if (selectedImage.value == null ||
+                          if (selectedImages.isEmpty ||
                               selectedCategoryId.value == null ||
                               selectedSubCategoryId.value == null) {
                             Get.snackbar(
@@ -181,13 +220,15 @@ class AdminAddProductPage extends StatelessWidget {
                             name: nameCtrl.text.trim(),
                             description: descCtrl.text.trim(),
                             price: double.parse(priceCtrl.text),
-                            image: selectedImage.value!,
+                            images: selectedImages, // ✅ FIXED
                             categoryId: selectedCategoryId.value!,
-                            subCategoryId: selectedSubCategoryId.value!,
+                            subCategoryId:
+                                selectedSubCategoryId.value!,
                           );
                         },
                   child: productCtrl.isLoading.value
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(
+                          color: Colors.white)
                       : const Text('Add Product'),
                 ),
               );

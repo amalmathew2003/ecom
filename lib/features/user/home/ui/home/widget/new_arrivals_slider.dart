@@ -51,7 +51,7 @@ class ProductCarousel extends StatelessWidget {
                 /// IMAGE
                 Positioned.fill(
                   child: Image.network(
-                    product.imageUrl,
+                    product.imageUrl.first,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;

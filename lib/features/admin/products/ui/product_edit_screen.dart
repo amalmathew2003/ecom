@@ -91,21 +91,30 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                 onTap: pickImage,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: selectedImage != null
-                      ? Image.file(
-                          selectedImage!,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.network(
-                          widget.product.imageUrl,
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                  child: SizedBox(
+                    height: 160,
+                    width: double.infinity,
+                    child: selectedImage != null
+                        /// NEWLY PICKED IMAGE (PREVIEW)
+                        ? Image.file(selectedImage!, fit: BoxFit.cover)
+                        /// EXISTING IMAGES (CAROUSEL)
+                        : PageView.builder(
+                            itemCount: widget.product.imageUrl.length,
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                widget.product.imageUrl[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: Colors.grey.shade300,
+                                  child: const Icon(Icons.image_not_supported),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
                 ),
               ),
+
               const SizedBox(height: 8),
               const Text("Tap image to change"),
 

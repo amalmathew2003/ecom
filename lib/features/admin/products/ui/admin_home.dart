@@ -96,7 +96,7 @@ class _AdminHomeState extends State<AdminHome> {
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: Image.network(
-                          product.imageUrl,
+                          product.imageUrl.first,
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,

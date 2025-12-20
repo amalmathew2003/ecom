@@ -1,52 +1,95 @@
+import 'package:ecom/features/user/home/ui/product_details/widget/full_screen_image_viewer.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ProductDetailsScreen extends StatelessWidget {
+class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
 
   const ProductDetailsScreen({super.key, required this.product});
 
   @override
+  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+}
+
+class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  int _currentIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final images = widget.product.imageUrl;
+
     return Scaffold(
       backgroundColor: ColorConst.bg,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// ================= IMAGE HEADER =================
-            SizedBox(
+
+      /// ✅ ALWAYS SCROLLABLE
+      body: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          /// ================= IMAGE HEADER =================
+          SliverToBoxAdapter(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height * .50,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
+                  /// IMAGE CAROUSEL
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(
                       bottom: Radius.circular(60),
                     ),
-                    child: Image.network(product.imageUrl, fit: BoxFit.cover),
+                    child: images.isNotEmpty
+                        ? PageView.builder(
+                            itemCount: images.length,
+                            onPageChanged: (index) {
+                              setState(() => _currentIndex = index);
+                            },
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Get.to(
+                                    () => FullScreenImageViewer(
+                                      images: images,
+                                      initialIndex: index,
+                                    ),
+                                    transition: Transition.fadeIn,
+                                  );
+                                },
+                                child: Image.network(
+                                  images[index],
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  errorBuilder: (_, __, ___) =>
+                                      _imageFallback(),
+                                ),
+                              );
+                            },
+                          )
+                        : _imageFallback(),
                   ),
 
-                  // Gradient overlay
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(60),
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.55),
-                          Colors.transparent,
-                        ],
+                  /// ✅ GRADIENT OVERLAY (DOES NOT BLOCK TOUCH)
+                  IgnorePointer(
+                    ignoring: true, // 🔥 KEY FIX
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(60),
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.55),
+                            Colors.transparent,
+                          ],
+                        ),
                       ),
                     ),
                   ),
 
-                  // Back button
+                  /// BACK BUTTON
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 12,
                     left: 16,
@@ -67,21 +110,48 @@ class ProductDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+
+                  /// DOT INDICATOR
+                  if (images.length > 1)
+                    Positioned(
+                      bottom: 18,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          images.length,
+                          (index) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            height: 8,
+                            width: _currentIndex == index ? 20 : 8,
+                            decoration: BoxDecoration(
+                              color: _currentIndex == index
+                                  ? ColorConst.accent
+                                  : Colors.white.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 24),
-
-            /// ================= PRODUCT INFO =================
-            Padding(
+          /// ================= PRODUCT INFO =================
+          SliverToBoxAdapter(
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product name
+                  const SizedBox(height: 24),
+
                   Text(
-                    product.name,
+                    widget.product.name,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -91,16 +161,15 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  // Price + Rating
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "₹ ${product.price}",
+                        "₹ ${widget.product.price}",
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
-                          color: ColorConst.accent, // ivory
+                          color: ColorConst.accent,
                         ),
                       ),
                       Row(
@@ -117,12 +186,9 @@ class ProductDetailsScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 24),
-
                   Divider(color: ColorConst.textMuted.withOpacity(0.3)),
-
                   const SizedBox(height: 16),
 
-                  // Section title
                   const Text(
                     "Product Details",
                     style: TextStyle(
@@ -134,9 +200,8 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  // Description
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: const TextStyle(
                       fontSize: 15,
                       height: 1.6,
@@ -144,12 +209,13 @@ class ProductDetailsScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  /// EXTRA SPACE TO MAKE SCROLL OBVIOUS
+                  const SizedBox(height: 120),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
 
       /// ================= BOTTOM ACTION =================
@@ -169,7 +235,6 @@ class ProductDetailsScreen extends StatelessWidget {
           height: 56,
           child: Row(
             children: [
-              // Secondary CTA
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
@@ -186,10 +251,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(width: 14),
-
-              // Primary CTA
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -212,6 +274,14 @@ class ProductDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// ================= FALLBACK IMAGE =================
+  Widget _imageFallback() {
+    return Container(
+      color: Colors.grey.shade300,
+      child: const Center(child: Icon(Icons.image_not_supported, size: 40)),
     );
   }
 }

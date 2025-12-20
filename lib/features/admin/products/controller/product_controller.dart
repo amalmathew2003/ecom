@@ -31,7 +31,7 @@ class AdminProductController extends GetxController {
     required String name,
     required String description,
     required double price,
-    required File image,
+    required List<File> images, // ✅ FIXED
     required String categoryId,
     required String subCategoryId,
   }) async {
@@ -39,25 +39,33 @@ class AdminProductController extends GetxController {
       isLoading.value = true;
 
       /// =======================
-      /// UPLOAD IMAGE
+      /// UPLOAD MULTIPLE IMAGES
       /// =======================
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.png';
-      final bytes = await image.readAsBytes();
+      List<String> imageUrls = [];
 
-      await supabase.storage
-          .from('product-images')
-          .uploadBinary(
-            'products/$fileName',
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/png',
-              upsert: true,
-            ),
-          );
+      for (final image in images) {
+        final fileName =
+            '${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}';
 
-      final imageUrl = supabase.storage
-          .from('product-images')
-          .getPublicUrl('products/$fileName');
+        final bytes = await image.readAsBytes();
+
+        await supabase.storage
+            .from('product-images')
+            .uploadBinary(
+              'products/$fileName',
+              bytes,
+              fileOptions: const FileOptions(
+                contentType: 'image/png',
+                upsert: true,
+              ),
+            );
+
+        final imageUrl = supabase.storage
+            .from('product-images')
+            .getPublicUrl('products/$fileName');
+
+        imageUrls.add(imageUrl);
+      }
 
       /// =======================
       /// INSERT PRODUCT
@@ -66,9 +74,9 @@ class AdminProductController extends GetxController {
         'name': name,
         'description': description,
         'price': price,
-        'image_url': imageUrl,
-        'category_id': categoryId, // ✅ UUID
-        'sub_category_id': subCategoryId, // ✅ UUID
+        'image_url': imageUrls, // ✅ TEXT[] (LIST)
+        'category_id': categoryId,
+        'sub_category_id': subCategoryId,
       });
 
       Get.snackbar('Success', 'Product added successfully');

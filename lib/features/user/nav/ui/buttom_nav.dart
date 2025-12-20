@@ -1,5 +1,5 @@
 import 'package:ecom/features/user/cart/ui/cart_screen.dart';
-import 'package:ecom/features/user/home/ui/user_home.dart';
+import 'package:ecom/features/user/home/ui/home/user_home.dart';
 import 'package:ecom/features/user/nav/controller/nav_controller.dart';
 import 'package:ecom/features/user/profile/ui/profile_screen.dart';
 import 'package:flutter/material.dart';
