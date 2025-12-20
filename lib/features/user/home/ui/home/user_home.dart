@@ -21,12 +21,11 @@ class UserHome extends StatelessWidget {
   final ProductController productCtrl = Get.put(ProductController());
 
   /// ==========================
-  /// Explore SHOW CATEGORY BOTTOM SHEET
+  /// CATEGORY BOTTOM SHEET
   void _showCategorySheet(BuildContext context) {
     showModalBottomSheet(
-      backgroundColor: ColorConst.ivory,
+      backgroundColor: ColorConst.card,
       context: context,
-      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -53,34 +52,32 @@ class UserHome extends StatelessWidget {
                     Navigator.pop(context);
                   },
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        width: 80,
+                        width: 70,
                         height: 50,
                         decoration: BoxDecoration(
+                          color: ColorConst.surface,
                           borderRadius: BorderRadius.circular(12),
-                          color: ColorConst.navy,
                         ),
                         child: Center(
                           child: Text(
                             cat['name'][0].toUpperCase(),
                             style: const TextStyle(
-                              color: Colors.blueAccent,
+                              color: ColorConst.accent,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         cat['name'],
                         textAlign: TextAlign.center,
                         style: const TextStyle(
+                          color: ColorConst.textLight,
                           fontSize: 13,
-                          color: ColorConst.textDark,
                         ),
                       ),
                     ],
@@ -92,9 +89,10 @@ class UserHome extends StatelessWidget {
         );
       },
     );
-  } ///////////////////////////////////
+  }
 
-  /// ==========================Show Filter CATEGORY BOTTOM SHEET
+  /// ==========================
+  /// FILTER SHEET
   void _showFilterSheet(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: ColorConst.card,
@@ -107,22 +105,20 @@ class UserHome extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'Sort & Filter',
                 style: TextStyle(
+                  color: ColorConst.textLight,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: ColorConst.navy,
                 ),
               ),
               const SizedBox(height: 20),
-
               ListTile(
                 title: const Text(
                   'Price: Low to High',
-                  style: TextStyle(color: ColorConst.textDark),
+                  style: TextStyle(color: ColorConst.textLight),
                 ),
                 onTap: () {
                   productCtrl.sortByPriceLowToHigh();
@@ -130,8 +126,10 @@ class UserHome extends StatelessWidget {
                 },
               ),
               ListTile(
-                title: const Text('Price: High to Low',                  style: TextStyle(color: ColorConst.textDark),
-),
+                title: const Text(
+                  'Price: High to Low',
+                  style: TextStyle(color: ColorConst.textLight),
+                ),
                 onTap: () {
                   productCtrl.sortByPriceHighToLow();
                   Navigator.pop(context);
@@ -147,24 +145,18 @@ class UserHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorConst.accent,
+      backgroundColor: ColorConst.bg,
 
-      /// ==========================
-      /// BODY
-      /// ==========================
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ==========================
-            /// MODERN HEADER (REPLACES APP BAR)
-            /// ==========================
+            /// HEADER
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 38, 16, 20),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
+              decoration: const BoxDecoration(
                 color: ColorConst.navy,
-
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(24),
                 ),
@@ -172,42 +164,34 @@ class UserHome extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  /// APP NAME
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    children: const [
                       Text(
                         'NeoMart',
                         style: TextStyle(
                           color: ColorConst.accent,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
                         ),
                       ),
-                      SizedBox(height: 5),
+                      SizedBox(height: 4),
                       Text(
                         'Welcome 👋',
                         style: TextStyle(
-                          color: ColorConst.ivory.withValues(alpha: 0.8),
-                          fontSize: 24,
+                          color: ColorConst.textMuted,
+                          fontSize: 16,
                         ),
                       ),
                     ],
                   ),
-
-                  /// LOGOUT BUTTON
                   Container(
                     decoration: BoxDecoration(
-                      color: ColorConst.ivory,
+                      color: ColorConst.surface,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: IconButton(
-                      tooltip: 'Logout',
-                      icon: const Icon(
-                        Icons.logout_rounded,
-                        color: ColorConst.navy,
-                      ),
+                      icon: const Icon(Icons.logout, color: ColorConst.accent),
                       onPressed: () async {
                         await auth.logout();
                         Get.offAllNamed(AppRoutes.login);
@@ -218,29 +202,22 @@ class UserHome extends StatelessWidget {
               ),
             ),
 
-            /// ==========================
-            /// HERO / NEW ARRIVALS
-            /// ==========================
+            /// NEW ARRIVALS
+            const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10),
               child: ProductCarousel(),
             ),
 
-            /// ==========================
-            /// 🔹 CATEGORIES
-            /// ==========================
+            /// CATEGORIES
             _SectionCard(
               title: 'Browse Categories',
               actionText: 'Explore',
-              onActionTap: () {
-                _showCategorySheet(context);
-              },
+              onActionTap: () => _showCategorySheet(context),
               child: SizedBox(
                 height: 50,
                 child: Obx(() {
-                  if (categoryCtrl.categories.isEmpty) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+                  final selectedIndex = categoryCtrl.selectedIndex.value;
 
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -248,19 +225,15 @@ class UserHome extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final cat = categoryCtrl.categories[index];
 
-                      return Obx(
-                        () => CategoryChip(
-                          title: cat['name'],
-                          isSelected: categoryCtrl.selectedIndex.value == index,
-                          onTap: () {
-                            categoryCtrl.select(index);
-
-                            final categoryId = cat['id'].toString();
-
-                            productCtrl.fetchProducts(categoryId: categoryId);
-                            subCategoryCtrl.fetchSubCategories(categoryId);
-                          },
-                        ),
+                      return CategoryChip(
+                        title: cat['name'],
+                        isSelected: selectedIndex == index, // ✅ works
+                        onTap: () {
+                          categoryCtrl.select(index); // ✅ updates
+                          final categoryId = cat['id'].toString();
+                          productCtrl.fetchProducts(categoryId: categoryId);
+                          subCategoryCtrl.fetchSubCategories(categoryId);
+                        },
                       );
                     },
                   );
@@ -268,72 +241,65 @@ class UserHome extends StatelessWidget {
               ),
             ),
 
-            /// ==========================
-            /// 🔹 SUB-CATEGORIES (SMART)
-            /// ==========================
+            /// SUB CATEGORIES
             Obx(() {
               if (subCategoryCtrl.subCategories.isEmpty) {
                 return const SizedBox();
               }
-
               return _SectionCard(
                 title: 'Refine by',
                 actionText: 'Filter',
-                onActionTap: () {
-                  _showFilterSheet(context);
-                },
-
+                onActionTap: () => _showFilterSheet(context),
                 child: SizedBox(
                   height: 44,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: subCategoryCtrl.subCategories.length,
-                    itemBuilder: (context, index) {
-                      final sub = subCategoryCtrl.subCategories[index];
+                  child: Obx(() {
+                    final selected = subCategoryCtrl.selectedIndex.value;
 
-                      return Obx(
-                        () => CategoryChip(
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: subCategoryCtrl.subCategories.length,
+                      itemBuilder: (context, index) {
+                        final sub = subCategoryCtrl.subCategories[index];
+
+                        return CategoryChip(
                           title: sub['name'],
-                          isSelected:
-                              subCategoryCtrl.selectedIndex.value == index,
+                          isSelected: selected == index, // ✅ FIXED
                           onTap: () {
-                            subCategoryCtrl.select(index);
+                            subCategoryCtrl.select(index); // ✅ updates state
+
                             productCtrl.fetchProductsBySubCategory(
                               subCategoryId: sub['id'].toString(),
                             );
                           },
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    );
+                  }),
                 ),
               );
             }),
 
-            /// ==========================
-            /// 🔹 PRODUCTS GRID
-            /// ==========================
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: const Text(
+            /// PRODUCTS
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
                 'Popular Products',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: ColorConst.textLight,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 12),
 
             Obx(() {
               if (productCtrl.isLoading.value) {
-                return const Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              if (productCtrl.products.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(40),
-                  child: Center(child: Text('No products found')),
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40),
+                    child: CircularProgressIndicator(color: ColorConst.accent),
+                  ),
                 );
               }
 
@@ -349,8 +315,8 @@ class UserHome extends StatelessWidget {
                     crossAxisSpacing: 14,
                     childAspectRatio: 0.72,
                   ),
-                  itemBuilder: (_, index) {
-                    return ProductCard(product: productCtrl.products[index]);
+                  itemBuilder: (_, i) {
+                    return ProductCard(product: productCtrl.products[i]);
                   },
                 ),
               );
@@ -362,9 +328,8 @@ class UserHome extends StatelessWidget {
   }
 }
 
-/// =======================================================
-/// 🔹 REUSABLE SECTION CARD (KEY TO CLEAN UI)
-/// =======================================================
+/// ==========================
+/// SECTION CARD (DARK)
 class _SectionCard extends StatelessWidget {
   final String title;
   final String actionText;
@@ -382,51 +347,38 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorConst.card,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// HEADER
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
                 style: const TextStyle(
+                  color: ColorConst.textLight,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              /// ✅ CLICKABLE ACTION TEXT
-              if (actionText.isNotEmpty)
-                GestureDetector(
-                  onTap: onActionTap,
-                  child: Text(
-                    actionText,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: onActionTap != null
-                          ? Colors.blueAccent
-                          : Colors.grey.shade600,
-                    ),
+              GestureDetector(
+                onTap: onActionTap,
+                child: Text(
+                  actionText,
+                  style: const TextStyle(
+                    color: ColorConst.accent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           child,
         ],
       ),

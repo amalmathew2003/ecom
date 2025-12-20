@@ -81,7 +81,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.55),
+                            Colors.black.withValues(alpha: .55),
                             Colors.transparent,
                           ],
                         ),
@@ -97,7 +97,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       height: 44,
                       width: 44,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.35),
+                        color: Colors.black.withValues(alpha: .35),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: IconButton(
@@ -129,7 +129,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             decoration: BoxDecoration(
                               color: _currentIndex == index
                                   ? ColorConst.accent
-                                  : Colors.white.withOpacity(0.5),
+                                  : Colors.white.withValues(alpha: .5),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
@@ -186,7 +186,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
 
                   const SizedBox(height: 24),
-                  Divider(color: ColorConst.textMuted.withOpacity(0.3)),
+                  Divider(color: ColorConst.textMuted.withValues(alpha: .3)),
                   const SizedBox(height: 16),
 
                   const Text(
@@ -225,7 +225,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           color: ColorConst.bg,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: .25),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -239,7 +239,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: ColorConst.accent,
-                    side: BorderSide(color: ColorConst.accent.withOpacity(0.6)),
+                    side: BorderSide(color: ColorConst.accent.withValues(alpha: .6)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -258,7 +258,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     backgroundColor: ColorConst.accent,
                     foregroundColor: ColorConst.textDark,
                     elevation: 6,
-                    shadowColor: Colors.black.withOpacity(0.35),
+                    shadowColor: Colors.black.withValues(alpha: .35),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

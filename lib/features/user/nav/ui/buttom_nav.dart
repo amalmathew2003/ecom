@@ -2,6 +2,7 @@ import 'package:ecom/features/user/cart/ui/cart_screen.dart';
 import 'package:ecom/features/user/home/ui/home/user_home.dart';
 import 'package:ecom/features/user/nav/controller/nav_controller.dart';
 import 'package:ecom/features/user/profile/ui/profile_screen.dart';
+import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,56 +15,61 @@ class UserRootPage extends StatelessWidget {
 
     final pages = [UserHome(), const CartScreen(), const ProfileScreen()];
 
-    const navy = Color(0xFF0B1A3A);
-    const ivory = Color(0xFFF6E3B5);
-
     return Obx(
       () => Scaffold(
+        backgroundColor: ColorConst.bg,
         extendBody: true,
+
+        /// MAIN BODY
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeInOut,
+          switchOutCurve: Curves.easeInOut,
           child: pages[nav.currentIndex.value],
         ),
 
+        /// BOTTOM NAVIGATION
         bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(12), // space around nav
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(24), // ✅ CURVE HERE
+            borderRadius: BorderRadius.circular(26),
             child: Container(
               decoration: BoxDecoration(
-                color: navy,
+                color: ColorConst.card,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: .25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 14,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: BottomNavigationBar(
-                backgroundColor: navy,
+                backgroundColor: Colors.transparent,
                 currentIndex: nav.currentIndex.value,
                 onTap: nav.changeTab,
                 type: BottomNavigationBarType.fixed,
-                selectedItemColor: ivory,
-                unselectedItemColor: ivory.withValues(alpha: .6),
-                showUnselectedLabels: true,
                 elevation: 0,
+                showUnselectedLabels: true,
+
+                selectedItemColor: ColorConst.accent,
+                unselectedItemColor: ColorConst.textMuted.withOpacity(0.7),
+
                 items: [
                   _navItem(
-                    Icons.home_rounded,
-                    'Home',
-                    nav.currentIndex.value == 0,
+                    icon: Icons.home_rounded,
+                    label: 'Home',
+                    isActive: nav.currentIndex.value == 0,
                   ),
                   _navItem(
-                    Icons.shopping_cart_outlined,
-                    'Cart',
-                    nav.currentIndex.value == 1,
+                    icon: Icons.shopping_cart_outlined,
+                    label: 'Cart',
+                    isActive: nav.currentIndex.value == 1,
                   ),
                   _navItem(
-                    Icons.person_outline,
-                    'Profile',
-                    nav.currentIndex.value == 2,
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    isActive: nav.currentIndex.value == 2,
                   ),
                 ],
               ),
@@ -74,19 +80,24 @@ class UserRootPage extends StatelessWidget {
     );
   }
 
-  BottomNavigationBarItem _navItem(IconData icon, String label, bool isActive) {
-    const ivory = Color(0xFFF6E3B5);
-
+  /// NAV ITEM (UI ONLY)
+  BottomNavigationBarItem _navItem({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+  }) {
     return BottomNavigationBarItem(
       label: label,
       icon: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        duration: const Duration(milliseconds: 220),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? ivory.withValues(alpha: .15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          color: isActive
+              ? ColorConst.accent.withOpacity(0.18)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Icon(icon),
+        child: Icon(icon, size: 22),
       ),
     );
   }

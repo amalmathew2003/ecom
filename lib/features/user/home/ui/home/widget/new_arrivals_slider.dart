@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ecom/features/user/home/controller/product_controller.dart';
+import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,56 +12,29 @@ class ProductCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-
-    // 🔹 Responsive values
     final bool isMobile = width < 600;
-    final bool isTablet = width >= 600 && width < 1024;
-
-    final double carouselHeight = isMobile
-        ? 220
-        : isTablet
-        ? 220
-        : 260;
-
-    final double viewport = isMobile
-        ? 0.8
-        : isTablet
-        ? 0.75
-        : 0.6;
 
     return Obx(() {
       if (productCtrl.newArrivals.isEmpty) {
-        return SizedBox(height: carouselHeight);
+        return const SizedBox(height: 220);
       }
 
       return CarouselSlider(
         options: CarouselOptions(
-          autoPlayCurve: Curves.easeInOutCubic,
-
-          height: carouselHeight,
+          height: 220,
           autoPlay: true,
           enlargeCenterPage: true,
-          viewportFraction: viewport,
-          autoPlayInterval: const Duration(seconds: 4),
+          viewportFraction: 0.8,
         ),
         items: productCtrl.newArrivals.map((product) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Stack(
               children: [
-                /// IMAGE
                 Positioned.fill(
                   child: Image.network(
                     product.imageUrl.first,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    },
-                    errorBuilder: (_, __, ___) =>
-                        const Center(child: Icon(Icons.broken_image)),
                   ),
                 ),
 
@@ -72,7 +46,7 @@ class ProductCarousel extends StatelessWidget {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withValues(alpha: 0.6),
+                          Colors.black.withOpacity(0.65),
                           Colors.transparent,
                         ],
                       ),
@@ -80,30 +54,27 @@ class ProductCarousel extends StatelessWidget {
                   ),
                 ),
 
-                /// PRODUCT INFO
+                /// INFO
                 Positioned(
                   left: 16,
-                  right: 16,
-                  bottom: 20,
+                  bottom: 16,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         product.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isMobile ? 16 : 18,
+                        style: const TextStyle(
+                          color: ColorConst.textLight,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         '₹${product.price}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isMobile ? 14 : 16,
+                        style: const TextStyle(
+                          color: ColorConst.price,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -120,13 +91,13 @@ class ProductCarousel extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.redAccent,
+                      color: ColorConst.accent,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
                       'NEW',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),

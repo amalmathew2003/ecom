@@ -17,18 +17,16 @@ class ProductCard extends StatelessWidget {
         Get.to(
           () => ProductDetailsScreen(product: product),
           transition: Transition.fadeIn,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 400),
         );
       },
-
       child: Container(
         decoration: BoxDecoration(
-          color: ColorConst.bg,
+          color: ColorConst.card,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withValues(alpha: 0.06),
+              color: Colors.black.withOpacity(0.25),
               blurRadius: 14,
               offset: const Offset(0, 8),
             ),
@@ -40,15 +38,13 @@ class ProductCard extends StatelessWidget {
             /// IMAGE
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(18),
-                ),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(18)),
                 child: Image.network(
                   product.imageUrl.first,
-                  width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: Colors.red.shade200,
+                    color: ColorConst.surface,
                     child: const Icon(Icons.image_not_supported),
                   ),
                 ),
@@ -66,7 +62,7 @@ class ProductCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: ColorConst.accent,
+                      color: ColorConst.textLight,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -75,8 +71,7 @@ class ProductCard extends StatelessWidget {
                   Text(
                     '₹${product.price}',
                     style: const TextStyle(
-                      color: ColorConst.ivory,
-
+                      color: ColorConst.price,
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),

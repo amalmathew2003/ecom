@@ -15,10 +15,12 @@ class AdminHome extends StatefulWidget {
 
 class _AdminHomeState extends State<AdminHome> {
   late final AdminProductController productCtrl;
+
   @override
   void initState() {
     super.initState();
     productCtrl = Get.put(AdminProductController());
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       productCtrl.fetchProducts();
     });
@@ -29,11 +31,20 @@ class _AdminHomeState extends State<AdminHome> {
     final auth = AuthService();
 
     return Scaffold(
+      backgroundColor: const Color(0xFF192230),
+
+      /// APP BAR
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        backgroundColor: const Color(0xFF192230),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Admin Dashboard',
+          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.4),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Color(0xFFFFCD00)),
             onPressed: () {
               auth.logout();
               Get.offAllNamed('/login');
@@ -41,32 +52,39 @@ class _AdminHomeState extends State<AdminHome> {
           ),
         ],
       ),
+
       body: Column(
         children: [
           const SizedBox(height: 16),
 
-          /// ADD BUTTONS
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Add Product'),
-                onPressed: () {
-                  Get.to(
-                    () => AdminAddProductPage(),
-                  )!.then((_) => productCtrl.fetchProducts());
-                },
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.category),
-                label: const Text('Add Category'),
-                onPressed: () {
-                  Get.to(() => AdminAddCategoryPage());
-                },
-              ),
-            ],
+          /// ACTION BUTTONS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _actionButton(
+                    icon: Icons.add,
+                    label: 'Add Product',
+                    onTap: () {
+                      Get.to(
+                        () => AdminAddProductPage(),
+                      )?.then((_) => productCtrl.fetchProducts());
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _actionButton(
+                    icon: Icons.category,
+                    label: 'Add Category',
+                    onTap: () {
+                      Get.to(() => AdminAddCategoryPage());
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -75,57 +93,95 @@ class _AdminHomeState extends State<AdminHome> {
           Expanded(
             child: Obx(() {
               if (productCtrl.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFFFCD00)),
+                );
               }
 
               if (productCtrl.products.isEmpty) {
-                return const Center(child: Text("No products found"));
+                return const Center(
+                  child: Text(
+                    "No products found",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                );
               }
 
               return ListView.builder(
+                padding: const EdgeInsets.only(bottom: 16),
                 itemCount: productCtrl.products.length,
                 itemBuilder: (context, index) {
                   final product = productCtrl.products[index];
+                  final image = product.imageUrl.isNotEmpty
+                      ? product.imageUrl.first
+                      : null;
 
-                  return Card(
+                  return Container(
                     margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2C2F38),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.all(12),
+
+                      /// IMAGE
                       leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.network(
-                          product.imageUrl.first,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(12),
+                        child: image != null
+                            ? Image.network(
+                                image,
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _imageFallback(),
+                              )
+                            : _imageFallback(),
+                      ),
+
+                      /// TEXT
+                      title: Text(
+                        product.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      title: Text(product.name),
-                      subtitle: Text(
-                        "₹${product.price}\n${product.description}",
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          "₹${product.price}\n${product.description}",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xFFB0B6BE),
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                       isThreeLine: true,
+
+                      /// ACTIONS
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          /// EDIT
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () {
+                          _iconAction(
+                            icon: Icons.edit,
+                            color: const Color(0xFFFFCD00),
+                            onTap: () {
                               Get.to(
-                                () => AdminEditProductPage(product: product),
+                                () =>
+                                    AdminEditProductPage(productId: product.id),
                               );
                             },
                           ),
-
-                          /// DELETE
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () async {
+                          _iconAction(
+                            icon: Icons.delete,
+                            color: Colors.redAccent,
+                            onTap: () async {
                               final success = await productCtrl.deleteProduct(
                                 product.id,
                               );
@@ -133,7 +189,7 @@ class _AdminHomeState extends State<AdminHome> {
                               if (!success) {
                                 Get.snackbar(
                                   'Failed',
-                                  'Delete failed (RLS or ID issue)',
+                                  'Delete failed',
                                   snackPosition: SnackPosition.TOP,
                                 );
                               }
@@ -148,6 +204,67 @@ class _AdminHomeState extends State<AdminHome> {
             }),
           ),
         ],
+      ),
+    );
+  }
+
+  /// ACTION BUTTON
+  Widget _actionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFCD00),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.black),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ICON ACTION
+  Widget _iconAction({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return IconButton(
+      icon: Icon(icon, color: color),
+      onPressed: onTap,
+    );
+  }
+
+  Widget _imageFallback() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.image_not_supported,
+        color: Colors.white70,
+        size: 20,
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:ecom/features/auth/ui/register_page.dart';
 import 'package:ecom/features/splash/controller/splach_controller.dart';
 import 'package:ecom/features/splash/ui/spalch_screen.dart';
 import 'package:ecom/features/user/home/ui/home/user_home.dart';
-import 'package:ecom/features/user/home/ui/product_details/product_details_screen.dart';
 import 'package:ecom/features/user/nav/ui/buttom_nav.dart';
 
 import 'package:get/get.dart';
