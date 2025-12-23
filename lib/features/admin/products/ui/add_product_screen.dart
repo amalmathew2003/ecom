@@ -121,7 +121,7 @@ class AdminAddProductPage extends StatelessWidget {
 
               return DropdownButtonFormField<String>(
                 decoration: const InputDecoration(labelText: 'Category'),
-                value: selectedCategoryId.value,
+                initialValue: selectedCategoryId.value,
                 items: categoryCtrl.categories.map((cat) {
                   return DropdownMenuItem(
                     value: cat['id'].toString(),
@@ -146,7 +146,7 @@ class AdminAddProductPage extends StatelessWidget {
 
               return DropdownButtonFormField<String>(
                 decoration: const InputDecoration(labelText: 'Sub Category'),
-                value: selectedSubCategoryId.value,
+                initialValue: selectedSubCategoryId.value,
                 items: subCategoryCtrl.subCategories.map((sub) {
                   return DropdownMenuItem(
                     value: sub['id'].toString(),

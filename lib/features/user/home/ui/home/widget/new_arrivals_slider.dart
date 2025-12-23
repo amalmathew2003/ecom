@@ -11,8 +11,6 @@ class ProductCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final bool isMobile = width < 600;
 
     return Obx(() {
       if (productCtrl.newArrivals.isEmpty) {
@@ -46,7 +44,7 @@ class ProductCarousel extends StatelessWidget {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withOpacity(0.65),
+                          Colors.black.withValues(alpha: .65),
                           Colors.transparent,
                         ],
                       ),

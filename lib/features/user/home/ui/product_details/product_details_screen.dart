@@ -16,7 +16,7 @@ class ProductDetailsScreen extends StatefulWidget {
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  int _currentIndex = 0;
+  int currentIndex = 0;
 
   final reviewCtrl = Get.find<ReviewController>();
   final cartCtrl = Get.find<CartController>();
@@ -56,7 +56,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               child: images.isNotEmpty
                   ? PageView.builder(
                       itemCount: images.length,
-                      onPageChanged: (i) => setState(() => _currentIndex = i),
+                      onPageChanged: (i) => setState(() => currentIndex = i),
                       itemBuilder: (_, i) => GestureDetector(
                         onTap: () => Get.to(
                           () => FullScreenImageViewer(
@@ -78,7 +78,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 height: 44,
                 width: 44,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(.35),
+                  color: Colors.black.withValues(alpha: .35),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: IconButton(
@@ -137,7 +137,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             _stockStatus(widget.product.stock),
 
             const SizedBox(height: 24),
-            Divider(color: ColorConst.textMuted.withOpacity(.3)),
+            Divider(color: ColorConst.textMuted.withValues(alpha: .3)),
 
             const SizedBox(height: 16),
             const Text(
@@ -205,7 +205,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(.18),
+                  color: Colors.black.withValues(alpha: .18),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
@@ -259,7 +259,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           style: OutlinedButton.styleFrom(
             foregroundColor: ColorConst.accent,
             side: BorderSide(
-              color: ColorConst.accent.withOpacity(.6),
+              color: ColorConst.accent.withValues(alpha: .6),
               width: 1.6,
             ),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -338,7 +338,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         hintText: "Share your experience",
                         hintStyle: const TextStyle(color: ColorConst.textMuted),
                         filled: true,
-                        fillColor: Colors.black.withOpacity(.15),
+                        fillColor: Colors.black.withValues(alpha: .15),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
@@ -405,7 +405,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       color: ColorConst.bg,
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(.25),
+          color: Colors.black.withValues(alpha: .25),
           blurRadius: 12,
           offset: const Offset(0, -4),
         ),
@@ -420,7 +420,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: ColorConst.accent,
                 side: BorderSide(
-                  color: ColorConst.accent.withOpacity(.6),
+                  color: ColorConst.accent.withValues(alpha: .6),
                   width: 1.4,
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),

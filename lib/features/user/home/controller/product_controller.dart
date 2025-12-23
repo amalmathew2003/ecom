@@ -20,6 +20,7 @@ class ProductController extends GetxController {
   Future<void> fetchProducts({String categoryId = 'all'}) async {
     try {
       isLoading.value = true;
+      await Future.delayed(const Duration(milliseconds: 200));
 
       var query = supabase.from('products').select();
 

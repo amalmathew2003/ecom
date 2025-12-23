@@ -38,7 +38,7 @@ class UserRootPage extends StatelessWidget {
                 color: ColorConst.card,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.35),
+                    color: Colors.black.withValues(alpha: .35),
                     blurRadius: 14,
                     offset: const Offset(0, 8),
                   ),
@@ -53,7 +53,7 @@ class UserRootPage extends StatelessWidget {
                 showUnselectedLabels: true,
 
                 selectedItemColor: ColorConst.accent,
-                unselectedItemColor: ColorConst.textMuted.withOpacity(0.7),
+                unselectedItemColor: ColorConst.textMuted.withValues(alpha: .7),
 
                 items: [
                   _navItem(
@@ -93,7 +93,7 @@ class UserRootPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? ColorConst.accent.withOpacity(0.18)
+              ? ColorConst.accent.withValues(alpha: .18)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),

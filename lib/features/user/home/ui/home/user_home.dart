@@ -6,9 +6,11 @@ import 'package:ecom/features/user/home/controller/usersubcategory_controller.da
 import 'package:ecom/features/user/home/ui/home/widget/category_chip.dart';
 import 'package:ecom/features/user/home/ui/home/widget/new_arrivals_slider.dart';
 import 'package:ecom/features/user/home/ui/home/widget/product_card.dart';
+import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class UserHome extends StatelessWidget {
   UserHome({super.key});
@@ -201,7 +203,6 @@ class UserHome extends StatelessWidget {
                 ],
               ),
             ),
-            
 
             /// NEW ARRIVALS
             const SizedBox(height: 12),
@@ -293,32 +294,33 @@ class UserHome extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
             Obx(() {
-              if (productCtrl.isLoading.value) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(40),
-                    child: CircularProgressIndicator(color: ColorConst.accent),
-                  ),
-                );
-              }
-
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: productCtrl.products.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 0.72,
+                child: Skeletonizer(
+                  enabled: productCtrl.isLoading.value,
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: productCtrl.isLoading.value
+                        ? 6
+                        : productCtrl.products.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 14,
+                          childAspectRatio: 0.72,
+                        ),
+                    itemBuilder: (_, i) {
+                      /// 👇 KEY FIX
+                      final product = productCtrl.isLoading.value
+                          ? ProductModel.skeleton()
+                          : productCtrl.products[i];
+
+                      return ProductCard(product: product);
+                    },
                   ),
-                  itemBuilder: (_, i) {
-                    return ProductCard(product: productCtrl.products[i]);
-                  },
                 ),
               );
             }),

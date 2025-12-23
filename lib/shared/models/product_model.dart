@@ -39,4 +39,18 @@ class ProductModel {
       ratingCount: json['rating_count'] ?? 0,
     );
   }
+  factory ProductModel.skeleton() {
+    return ProductModel(
+      id: '',
+      name: 'Loading',
+      price: 0,
+      description: '',
+      imageUrl: [''],
+      stock: 0,
+      rating: 0,
+      ratingCount: 0,
+      categoryId: '',
+      subCategoryId: '',
+    );
+  }
 }
