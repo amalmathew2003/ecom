@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {
@@ -26,7 +27,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ColorConst.bg,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -34,10 +35,10 @@ class _SplashPageState extends State<SplashPage> {
             alignment: logoAlignment,
             duration: const Duration(milliseconds: 800),
             curve: Curves.easeOut,
-            child: const Icon(
+            child: Icon(
               Icons.shopping_cart_rounded,
               size: 200,
-              color: Colors.black,
+              color: ColorConst.accent,
             ),
           ),
 
@@ -48,6 +49,7 @@ class _SplashPageState extends State<SplashPage> {
             child: const Text(
               'Neo Mart',
               style: TextStyle(
+                color: ColorConst.accent,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,

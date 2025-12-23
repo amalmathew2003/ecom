@@ -156,7 +156,7 @@ class UserHome extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
               decoration: const BoxDecoration(
-                color: ColorConst.navy,
+                color: ColorConst.bg,
                 borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(24),
                 ),
@@ -201,6 +201,7 @@ class UserHome extends StatelessWidget {
                 ],
               ),
             ),
+            
 
             /// NEW ARRIVALS
             const SizedBox(height: 12),

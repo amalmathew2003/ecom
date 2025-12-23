@@ -13,7 +13,7 @@ class UserRootPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final nav = Get.put(UserNavController());
 
-    final pages = [UserHome(), const CartScreen(), const ProfileScreen()];
+    final pages = [UserHome(), CartScreen(), const ProfileScreen()];
 
     return Obx(
       () => Scaffold(

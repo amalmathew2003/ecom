@@ -20,6 +20,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
   late TextEditingController nameCtrl;
   late TextEditingController descCtrl;
   late TextEditingController priceCtrl;
+  late TextEditingController stockCtrl; // ✅ NEW
 
   File? selectedImage;
   int currentImageIndex = 0;
@@ -37,6 +38,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
     nameCtrl = TextEditingController(text: product.name);
     descCtrl = TextEditingController(text: product.description);
     priceCtrl = TextEditingController(text: product.price.toString());
+    stockCtrl = TextEditingController(text: product.stock.toString()); // ✅
   }
 
   Future<void> pickImage() async {
@@ -55,11 +57,23 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
       (p) => p.id == widget.productId,
     );
 
+    final stock = int.tryParse(stockCtrl.text.trim());
+
+    if (stock == null || stock < 0) {
+      Get.snackbar(
+        'Error',
+        'Invalid stock value',
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
     final success = await productCtrl.updateProduct(
       productId: product.id,
-      name: nameCtrl.text,
-      description: descCtrl.text,
-      price: double.parse(priceCtrl.text),
+      name: nameCtrl.text.trim(),
+      description: descCtrl.text.trim(),
+      price: double.parse(priceCtrl.text.trim()),
+      stock: stock, // ✅ PASS STOCK
       newimage: selectedImage,
       imageIndex: currentImageIndex,
       imageUrl: product.imageUrl,
@@ -81,17 +95,15 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF192230),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF192230),
         elevation: 0,
         centerTitle: true,
         title: const Text(
           "Edit Product",
-          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.4),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-
       body: Obx(() {
         final product = productCtrl.products.firstWhere(
           (p) => p.id == widget.productId,
@@ -105,7 +117,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
             key: _formKey,
             child: Column(
               children: [
-                /// IMAGE SECTION
+                /// ================= IMAGE SECTION =================
                 Stack(
                   children: [
                     ClipRRect(
@@ -114,7 +126,10 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                         height: MediaQuery.sizeOf(context).height * .40,
                         width: double.infinity,
                         child: selectedImage != null
-                            ? Image.file(selectedImage!, fit: BoxFit.cover)
+                            ? Image.file(
+                                selectedImage!,
+                                fit: BoxFit.cover,
+                              )
                             : PageView.builder(
                                 itemCount: images.length,
                                 onPageChanged: (i) {
@@ -134,7 +149,8 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                     Positioned(
                       bottom: 14,
                       right: 14,
-                      child: _iconButton(icon: Icons.edit, onTap: pickImage),
+                      child:
+                          _iconButton(icon: Icons.edit, onTap: pickImage),
                     ),
                     Positioned(
                       bottom: 14,
@@ -160,7 +176,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
 
                 const SizedBox(height: 24),
 
-                /// INPUTS
+                /// ================= INPUTS =================
                 _modernField(
                   controller: nameCtrl,
                   label: "Product Name",
@@ -181,10 +197,19 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                   label: "Price",
                   keyboardType: TextInputType.number,
                 ),
+                const SizedBox(height: 14),
+
+                _modernField(
+                  controller: stockCtrl,
+                  label: "Stock Quantity", // ✅ NEW FIELD
+                  keyboardType: TextInputType.number,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? "Enter stock" : null,
+                ),
 
                 const SizedBox(height: 28),
 
-                /// UPDATE BUTTON
+                /// ================= UPDATE BUTTON =================
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -200,7 +225,9 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                       ),
                     ),
                     child: productCtrl.isLoading.value
-                        ? const CircularProgressIndicator(color: Colors.black)
+                        ? const CircularProgressIndicator(
+                            color: Colors.black,
+                          )
                         : const Text(
                             "Update Product",
                             style: TextStyle(
@@ -218,7 +245,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
     );
   }
 
-  /// UI ONLY
+  /// ================= UI HELPERS =================
   Widget _modernField({
     required TextEditingController controller,
     required String label,
@@ -245,8 +272,10 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
     );
   }
 
-  /// UI ONLY
-  Widget _iconButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _iconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(50),
@@ -256,7 +285,10 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
           color: const Color(0xFFFFCD00),
           shape: BoxShape.circle,
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: .3), blurRadius: 6),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .3),
+              blurRadius: 6,
+            ),
           ],
         ),
         child: Icon(icon, color: Colors.black),

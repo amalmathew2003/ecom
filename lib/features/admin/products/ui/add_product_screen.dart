@@ -17,6 +17,7 @@ class AdminAddProductPage extends StatelessWidget {
   final nameCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final priceCtrl = TextEditingController();
+  final stockCtrl = TextEditingController();
 
   final RxnString selectedCategoryId = RxnString();
   final RxnString selectedSubCategoryId = RxnString();
@@ -29,13 +30,10 @@ class AdminAddProductPage extends StatelessWidget {
   /// =======================
   Future<void> pickImages() async {
     final picker = ImagePicker();
-    final List<XFile> images =
-        await picker.pickMultiImage(imageQuality: 80);
+    final images = await picker.pickMultiImage(imageQuality: 80);
 
     if (images.isNotEmpty) {
-      selectedImages.assignAll(
-        images.map((e) => File(e.path)).toList(),
-      );
+      selectedImages.assignAll(images.map((e) => File(e.path)).toList());
     }
   }
 
@@ -47,9 +45,7 @@ class AdminAddProductPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            /// =======================
-            /// IMAGE PICKER
-            /// =======================
+            /// ================= IMAGE PICKER =================
             Obx(() {
               return GestureDetector(
                 onTap: pickImages,
@@ -102,11 +98,8 @@ class AdminAddProductPage extends StatelessWidget {
                                     child: const CircleAvatar(
                                       radius: 12,
                                       backgroundColor: Colors.black54,
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 14,
-                                        color: Colors.white,
-                                      ),
+                                      child: Icon(Icons.close,
+                                          size: 14, color: Colors.white),
                                     ),
                                   ),
                                 ),
@@ -120,19 +113,17 @@ class AdminAddProductPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            /// =======================
-            /// CATEGORY DROPDOWN
-            /// =======================
+            /// ================= CATEGORY =================
             Obx(() {
               if (categoryCtrl.categories.isEmpty) {
                 return const CircularProgressIndicator();
               }
 
               return DropdownButtonFormField<String>(
-                initialValue: selectedCategoryId.value,
                 decoration: const InputDecoration(labelText: 'Category'),
+                value: selectedCategoryId.value,
                 items: categoryCtrl.categories.map((cat) {
-                  return DropdownMenuItem<String>(
+                  return DropdownMenuItem(
                     value: cat['id'].toString(),
                     child: Text(cat['name']),
                   );
@@ -147,20 +138,17 @@ class AdminAddProductPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            /// =======================
-            /// SUB CATEGORY
-            /// =======================
+            /// ================= SUB CATEGORY =================
             Obx(() {
               if (selectedCategoryId.value == null) {
                 return const SizedBox();
               }
 
               return DropdownButtonFormField<String>(
-                initialValue: selectedSubCategoryId.value,
-                decoration:
-                    const InputDecoration(labelText: 'Sub Category'),
+                decoration: const InputDecoration(labelText: 'Sub Category'),
+                value: selectedSubCategoryId.value,
                 items: subCategoryCtrl.subCategories.map((sub) {
-                  return DropdownMenuItem<String>(
+                  return DropdownMenuItem(
                     value: sub['id'].toString(),
                     child: Text(sub['name']),
                   );
@@ -173,9 +161,7 @@ class AdminAddProductPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            /// =======================
-            /// PRODUCT DETAILS
-            /// =======================
+            /// ================= PRODUCT DETAILS =================
             TextField(
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Product Name'),
@@ -183,8 +169,8 @@ class AdminAddProductPage extends StatelessWidget {
 
             TextField(
               controller: descCtrl,
-              decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Description'),
             ),
 
             TextField(
@@ -193,11 +179,15 @@ class AdminAddProductPage extends StatelessWidget {
               decoration: const InputDecoration(labelText: 'Price'),
             ),
 
+            TextField(
+              controller: stockCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Stock Quantity'),
+            ),
+
             const SizedBox(height: 30),
 
-            /// =======================
-            /// SUBMIT BUTTON
-            /// =======================
+            /// ================= SUBMIT =================
             Obx(() {
               return SizedBox(
                 width: double.infinity,
@@ -208,22 +198,35 @@ class AdminAddProductPage extends StatelessWidget {
                       : () {
                           if (selectedImages.isEmpty ||
                               selectedCategoryId.value == null ||
-                              selectedSubCategoryId.value == null) {
+                              selectedSubCategoryId.value == null ||
+                              nameCtrl.text.isEmpty ||
+                              priceCtrl.text.isEmpty ||
+                              stockCtrl.text.isEmpty) {
                             Get.snackbar(
-                              'Error',
-                              'Please fill all fields',
-                            );
+                                'Error', 'Please fill all fields');
+                            return;
+                          }
+
+                          final stock =
+                              int.tryParse(stockCtrl.text.trim());
+
+                          if (stock == null || stock < 0) {
+                            Get.snackbar(
+                                'Error', 'Invalid stock value');
                             return;
                           }
 
                           productCtrl.addProduct(
                             name: nameCtrl.text.trim(),
                             description: descCtrl.text.trim(),
-                            price: double.parse(priceCtrl.text),
-                            images: selectedImages, // ✅ FIXED
-                            categoryId: selectedCategoryId.value!,
+                            price:
+                                double.parse(priceCtrl.text.trim()),
+                            images: selectedImages,
+                            categoryId:
+                                selectedCategoryId.value!,
                             subCategoryId:
                                 selectedSubCategoryId.value!,
+                            stock: stock,
                           );
                         },
                   child: productCtrl.isLoading.value

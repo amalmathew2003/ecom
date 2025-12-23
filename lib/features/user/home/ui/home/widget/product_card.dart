@@ -26,7 +26,7 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: .25),
               blurRadius: 14,
               offset: const Offset(0, 8),
             ),
@@ -35,17 +35,23 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// IMAGE
+            /// IMAGE (FIXED)
             Expanded(
               child: ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(18)),
-                child: Image.network(
-                  product.imageUrl.first,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: ColorConst.surface,
-                    child: const Icon(Icons.image_not_supported),
+                child: SizedBox.expand( // ✅ KEY FIX
+                  child: Image.network(
+                    product.imageUrl.first,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: ColorConst.surface,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: ColorConst.textMuted,
+                      ),
+                    ),
                   ),
                 ),
               ),

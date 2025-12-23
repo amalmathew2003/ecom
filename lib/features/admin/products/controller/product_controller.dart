@@ -38,6 +38,7 @@ class AdminProductController extends GetxController {
     required List<File> images,
     required String categoryId,
     required String subCategoryId,
+    required int stock,
   }) async {
     try {
       isLoading.value = true;
@@ -73,6 +74,7 @@ class AdminProductController extends GetxController {
         'image_url': imageUrls,
         'category_id': categoryId,
         'sub_category_id': subCategoryId,
+        'stock': stock,
       });
 
       await fetchProducts();
@@ -90,6 +92,7 @@ class AdminProductController extends GetxController {
     required String name,
     required String description,
     required double price,
+    required int stock,
     File? newimage,
     int? imageIndex,
     required List<String> imageUrl,
@@ -129,6 +132,7 @@ class AdminProductController extends GetxController {
             'name': name,
             'description': description,
             'price': price,
+            'stock': stock,
             'image_url': updatedImages,
             'category_id': categoryId,
             'sub_category_id': subCategoryId,
@@ -145,7 +149,7 @@ class AdminProductController extends GetxController {
     }
   }
 
-  /// ================= ADD IMAGE =================
+  /// ================= ADD IMAGE TO PRODUCT =================
   Future<bool> addimagetoProduct({
     required String productId,
     required File newImage,
@@ -159,6 +163,7 @@ class AdminProductController extends GetxController {
 
       final bytes = await newImage.readAsBytes();
 
+      // Upload to Supabase Storage
       await supabase.storage
           .from('product-images')
           .uploadBinary(
@@ -170,9 +175,11 @@ class AdminProductController extends GetxController {
             ),
           );
 
+      // Add new image URL to list
       final updatedImages = List<String>.from(existingImage)
         ..add(supabase.storage.from('product-images').getPublicUrl(fileName));
 
+      // Update product row
       await supabase
           .from('products')
           .update({'image_url': updatedImages})
@@ -181,20 +188,21 @@ class AdminProductController extends GetxController {
       await fetchProducts();
       return true;
     } catch (e) {
-      if (kDebugMode) print(e);
+      if (kDebugMode) {
+        print("Add image error: $e");
+      }
       return false;
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// ================= DELETE =================
+  /// ================= DELETE PRODUCT =================
   Future<bool> deleteProduct(String productId) async {
     try {
       isLoading.value = true;
 
       await supabase.from('products').delete().eq('id', productId);
-
       products.removeWhere((p) => p.id == productId);
       return true;
     } catch (e) {
