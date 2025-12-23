@@ -9,6 +9,7 @@ class RegisterPage extends StatelessWidget {
 
   final AuthController controller = Get.find<AuthController>();
 
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final RxBool isPasswordVisible = false.obs;
@@ -52,7 +53,9 @@ class RegisterPage extends StatelessWidget {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF312E81).withValues(alpha: .1),
+                            color: const Color(
+                              0xFF312E81,
+                            ).withValues(alpha: .1),
                           ),
                           child: const Icon(
                             Icons.person_add_alt_1,
@@ -89,6 +92,25 @@ class RegisterPage extends StatelessWidget {
                       const SizedBox(height: 32),
 
                       /// EMAIL
+                      FadeInDown(
+                        delay: const Duration(milliseconds: 400),
+                        child: TextField(
+                          controller: nameController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Name',
+                            prefixIcon: const Icon(Icons.person),
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       FadeInLeft(
                         delay: const Duration(milliseconds: 400),
                         child: TextField(
@@ -154,6 +176,7 @@ class RegisterPage extends StatelessWidget {
                                       controller.register(
                                         emailController.text.trim(),
                                         passwordController.text.trim(),
+                                        nameController.text.trim(),
                                       );
                                     },
                               style: ElevatedButton.styleFrom(

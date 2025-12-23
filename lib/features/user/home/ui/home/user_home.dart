@@ -6,6 +6,7 @@ import 'package:ecom/features/user/home/controller/usersubcategory_controller.da
 import 'package:ecom/features/user/home/ui/home/widget/category_chip.dart';
 import 'package:ecom/features/user/home/ui/home/widget/new_arrivals_slider.dart';
 import 'package:ecom/features/user/home/ui/home/widget/product_card.dart';
+import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
@@ -21,129 +22,7 @@ class UserHome extends StatelessWidget {
     UserSubCategoryController(),
   );
   final ProductController productCtrl = Get.put(ProductController());
-
-  /// ==========================
-  /// CATEGORY BOTTOM SHEET
-  void _showCategorySheet(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: ColorConst.card,
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Obx(() {
-            return GridView.builder(
-              itemCount: categoryCtrl.categories.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-              ),
-              itemBuilder: (_, index) {
-                final cat = categoryCtrl.categories[index];
-
-                return GestureDetector(
-                  onTap: () {
-                    categoryCtrl.select(index);
-                    final categoryId = cat['id'].toString();
-                    productCtrl.fetchProducts(categoryId: categoryId);
-                    subCategoryCtrl.fetchSubCategories(categoryId);
-                    Navigator.pop(context);
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: ColorConst.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            cat['name'][0].toUpperCase(),
-                            style: const TextStyle(
-                              color: ColorConst.accent,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        cat['name'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: ColorConst.textLight,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          }),
-        );
-      },
-    );
-  }
-
-  /// ==========================
-  /// FILTER SHEET
-  void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: ColorConst.card,
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Sort & Filter',
-                style: TextStyle(
-                  color: ColorConst.textLight,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                title: const Text(
-                  'Price: Low to High',
-                  style: TextStyle(color: ColorConst.textLight),
-                ),
-                onTap: () {
-                  productCtrl.sortByPriceLowToHigh();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  'Price: High to Low',
-                  style: TextStyle(color: ColorConst.textLight),
-                ),
-                onTap: () {
-                  productCtrl.sortByPriceHighToLow();
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
+  final ProfileController profileCtrl = Get.find<ProfileController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,8 +47,8 @@ class UserHome extends StatelessWidget {
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
+                    children: [
+                      const Text(
                         'NeoMart',
                         style: TextStyle(
                           color: ColorConst.accent,
@@ -177,14 +56,18 @@ class UserHome extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Welcome 👋',
-                        style: TextStyle(
-                          color: ColorConst.textMuted,
-                          fontSize: 16,
-                        ),
-                      ),
+                      const SizedBox(height: 4),
+                      Obx(() {
+                        final profile = profileCtrl.profile.value;
+
+                        return Text(
+                          'Welcome 👋 ${profile?.fullName ?? 'User'}',
+                          style: const TextStyle(
+                            color: ColorConst.textMuted,
+                            fontSize: 16,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                   Container(
@@ -327,6 +210,128 @@ class UserHome extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// ==========================
+  /// CATEGORY BOTTOM SHEET
+  void _showCategorySheet(BuildContext context) {
+    showModalBottomSheet(
+      backgroundColor: ColorConst.card,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Obx(() {
+            return GridView.builder(
+              itemCount: categoryCtrl.categories.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+              ),
+              itemBuilder: (_, index) {
+                final cat = categoryCtrl.categories[index];
+
+                return GestureDetector(
+                  onTap: () {
+                    categoryCtrl.select(index);
+                    final categoryId = cat['id'].toString();
+                    productCtrl.fetchProducts(categoryId: categoryId);
+                    subCategoryCtrl.fetchSubCategories(categoryId);
+                    Navigator.pop(context);
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 70,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: ColorConst.surface,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            cat['name'][0].toUpperCase(),
+                            style: const TextStyle(
+                              color: ColorConst.accent,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        cat['name'],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: ColorConst.textLight,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  /// ==========================
+  /// FILTER SHEET
+  void _showFilterSheet(BuildContext context) {
+    showModalBottomSheet(
+      backgroundColor: ColorConst.card,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Sort & Filter',
+                style: TextStyle(
+                  color: ColorConst.textLight,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                title: const Text(
+                  'Price: Low to High',
+                  style: TextStyle(color: ColorConst.textLight),
+                ),
+                onTap: () {
+                  productCtrl.sortByPriceLowToHigh();
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text(
+                  'Price: High to Low',
+                  style: TextStyle(color: ColorConst.textLight),
+                ),
+                onTap: () {
+                  productCtrl.sortByPriceHighToLow();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

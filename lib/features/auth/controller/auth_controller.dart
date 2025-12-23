@@ -64,11 +64,11 @@ class AuthController extends GetxController {
   }
 
   // 🔹 REGISTER
-  Future<void> register(String email, String password) async {
+  Future<void> register(String email, String password,name) async {
     try {
       isLoading.value = true;
 
-      await _service.register(email, password);
+      await _service.register(email, password,name);
 
       // New users are always normal users
       Get.offAllNamed(AppRoutes.userHome);

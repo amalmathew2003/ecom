@@ -1,5 +1,6 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
+import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'core/config/supabase_config.dart';
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         Get.put(AuthController(), permanent: true);
         Get.put(CartController(), permanent: true);
         Get.put(ReviewController());
+        Get.put(ProfileController());
       }),
     );
   }
