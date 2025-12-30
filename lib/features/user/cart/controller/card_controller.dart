@@ -104,6 +104,11 @@ class CartController extends GetxController {
     await supabase.from('cart').delete().eq('id', cartId);
   }
 
+  ///
+  bool isInCart(String productId) {
+    return cartItems.any((item) => item.product.id == productId);
+  }
+
   /// ================= TOTAL =================
   double get totalAmount => cartItems.fold(0, (sum, e) => sum + e.total);
 }

@@ -1,3 +1,4 @@
+import 'package:ecom/core/routes/app_routes.dart';
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/features/user/home/ui/product_details/widget/full_screen_image_viewer.dart';
@@ -416,36 +417,50 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: ColorConst.accent,
-                side: BorderSide(
-                  color: ColorConst.accent.withValues(alpha: .6),
-                  width: 1.4,
+            child: Obx(() {
+              final alreadyInCart = cartCtrl.isInCart(widget.product.id);
+
+              return OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: ColorConst.accent,
+                  side: BorderSide(
+                    color: ColorConst.accent.withValues(alpha: .6),
+                    width: 1.4,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                onPressed: widget.product.stock <= 0
+                    ? null
+                    : () async {
+                        if (alreadyInCart) {
+                          // 👉 GO TO CART
+                          Get.toNamed(AppRoutes.usercart);
+                          // or Get.to(() => CartScreen())
+                        } else {
+                          // 👉 ADD TO CART
+                          await cartCtrl.addToCart(
+                            productId: widget.product.id,
+                            stock: widget.product.stock,
+                          );
+                          Get.snackbar(
+                            "Added to Cart",
+                            "${widget.product.name} added successfully",
+                            snackPosition: SnackPosition.TOP,
+                          );
+                        }
+                      },
+                child: Text(
+                  alreadyInCart ? "Go to Cart" : "Add to Cart",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              onPressed: widget.product.stock <= 0
-                  ? null
-                  : () async {
-                      await cartCtrl.addToCart(
-                        productId: widget.product.id,
-                        stock: widget.product.stock,
-                      );
-                      Get.snackbar(
-                        "Added to Cart",
-                        "${widget.product.name} added successfully",
-                        snackPosition: SnackPosition.TOP,
-                      );
-                    },
-              child: const Text(
-                "Add to Cart",
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-            ),
+              );
+            }),
           ),
 
           const SizedBox(width: 14),

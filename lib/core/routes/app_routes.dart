@@ -3,6 +3,7 @@ import 'package:ecom/features/auth/ui/login_page.dart';
 import 'package:ecom/features/auth/ui/register_page.dart';
 import 'package:ecom/features/splash/controller/splach_controller.dart';
 import 'package:ecom/features/splash/ui/spalch_screen.dart';
+import 'package:ecom/features/user/cart/ui/cart_screen.dart';
 import 'package:ecom/features/user/home/ui/home/user_home.dart';
 import 'package:ecom/features/user/nav/ui/buttom_nav.dart';
 
@@ -15,6 +16,7 @@ class AppRoutes {
   static const usernav = '/user-nav';
   static const userHome = '/user-home';
   static const userproductdetils = '/user-home/product-details';
+  static const usercart = '/cart';
   static const adminHome = '/admin-home';
 
   static final pages = [
@@ -46,6 +48,7 @@ class AppRoutes {
     /// 🔹 User Home
     GetPage(name: usernav, page: () => const UserRootPage()),
     GetPage(name: userHome, page: () => UserHome()),
+    GetPage(name: usercart, page: () => CartScreen()),
 
     /// 🔹 Admin Home
     GetPage(name: adminHome, page: () => const AdminHome()),

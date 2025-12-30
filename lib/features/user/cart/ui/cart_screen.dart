@@ -1,4 +1,5 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
+import 'package:ecom/features/user/home/ui/product_details/product_details_screen.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,14 +17,13 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    cartCtrl.fetchCart(); // ✅ CALL ONCE
+    cartCtrl.fetchCart();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorConst.bg,
-
       body: SafeArea(
         child: Column(
           children: [
@@ -65,70 +65,137 @@ class _CartScreenState extends State<CartScreen> {
                     final item = cartCtrl.cartItems[index];
                     final product = item.product;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 14),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: ColorConst.card,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          /// IMAGE
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Image.network(
-                              product.imageUrl.first,
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        Get.to(
+                          () => ProductDetailsScreen(product: product),
+                          transition: Transition.fadeIn,
+                          duration: const Duration(milliseconds: 300),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: ColorConst.card,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: .25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
-                          ),
-
-                          const SizedBox(width: 14),
-
-                          /// INFO
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  product.name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: ColorConst.textLight,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            /// IMAGE + QTY BADGE
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Stack(
+                                children: [
+                                  Image.network(
+                                    product.imageUrl.first,
+                                    width: 90,
+                                    height: 90,
+                                    fit: BoxFit.cover,
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  "₹ ${item.total.toStringAsFixed(2)}",
-                                  style: const TextStyle(
-                                    color: ColorConst.price,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                  Positioned(
+                                    bottom: 6,
+                                    right: 6,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: .6,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        "x${item.quantity}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
                                   ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(width: 14),
+
+                            /// PRODUCT INFO
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: ColorConst.textLight,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  Text(
+                                    "₹ ${item.total.toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                      color: ColorConst.price,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 2),
+
+                                  Text(
+                                    "₹ ${product.price} ",
+                                    style: const TextStyle(
+                                      color: ColorConst.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  /// QTY STEPPER
+                                  _qtyStepper(item),
+                                ],
+                              ),
+                            ),
+
+                            /// DELETE
+                            IconButton(
+                              onPressed: () => cartCtrl.deleteItem(item.id),
+                              icon: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: ColorConst.danger.withValues(
+                                    alpha: .12,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-
-                                const SizedBox(height: 12),
-
-                                /// QTY STEPPER
-                                _qtyStepper(item),
-                              ],
+                                child: const Icon(
+                                  Icons.delete_outline,
+                                  color: ColorConst.danger,
+                                  size: 20,
+                                ),
+                              ),
                             ),
-                          ),
-
-                          /// DELETE
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: ColorConst.danger,
-                            ),
-                            onPressed: () => cartCtrl.deleteItem(item.id),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -182,7 +249,7 @@ class _CartScreenState extends State<CartScreen> {
   Widget _qtyStepper(item) {
     return Container(
       decoration: BoxDecoration(
-        color: ColorConst.surface,
+        color: Colors.black.withValues(alpha: .15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -211,7 +278,7 @@ class _CartScreenState extends State<CartScreen> {
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Icon(icon, size: 18, color: ColorConst.textLight),
+        child: Icon(icon, size: 18, color: ColorConst.accent),
       ),
     );
   }
