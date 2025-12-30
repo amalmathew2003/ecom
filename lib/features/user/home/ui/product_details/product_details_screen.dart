@@ -2,6 +2,7 @@ import 'package:ecom/core/routes/app_routes.dart';
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/features/user/home/ui/product_details/widget/full_screen_image_viewer.dart';
+import 'package:ecom/features/user/nav/controller/nav_controller.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
@@ -439,15 +440,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ? null
                     : () async {
                         if (alreadyInCart) {
-                          // 👉 GO TO CART
-                          Get.toNamed(AppRoutes.usercart);
-                          // or Get.to(() => CartScreen())
+                          // 1️⃣ Go back to root
+                          Get.until(
+                            (route) => route.settings.name == AppRoutes.usernav,
+                          );
+
+                          // 2️⃣ Switch bottom tab to Cart
+                          Get.find<UserNavController>().changeTab(1);
                         } else {
-                          // 👉 ADD TO CART
                           await cartCtrl.addToCart(
                             productId: widget.product.id,
                             stock: widget.product.stock,
                           );
+
                           Get.snackbar(
                             "Added to Cart",
                             "${widget.product.name} added successfully",
@@ -455,6 +460,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           );
                         }
                       },
+
                 child: Text(
                   alreadyInCart ? "Go to Cart" : "Add to Cart",
                   style: const TextStyle(
