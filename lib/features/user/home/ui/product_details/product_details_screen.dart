@@ -440,13 +440,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ? null
                     : () async {
                         if (alreadyInCart) {
-                          // 1️⃣ Go back to root
+                          final nav = Get.find<UserNavController>();
+
+                          // 1️⃣ Set tab BEFORE popping
+                          nav.changeTab(1);
+
+                          // 2️⃣ Pop back to UserRootPage
                           Get.until(
                             (route) => route.settings.name == AppRoutes.usernav,
                           );
-
-                          // 2️⃣ Switch bottom tab to Cart
-                          Get.find<UserNavController>().changeTab(1);
                         } else {
                           await cartCtrl.addToCart(
                             productId: widget.product.id,
@@ -460,7 +462,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           );
                         }
                       },
-
+ 
                 child: Text(
                   alreadyInCart ? "Go to Cart" : "Add to Cart",
                   style: const TextStyle(
