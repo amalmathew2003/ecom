@@ -21,7 +21,7 @@ class CartController extends GetxController {
         (response as List).map((e) => CartItemModel.fromJson(e)).toList(),
       );
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      // Get.snackbar('Error', e.toString());
     }
   }
 

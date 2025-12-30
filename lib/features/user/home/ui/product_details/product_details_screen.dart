@@ -25,7 +25,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    reviewCtrl.fetchReviews(widget.product.id);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      reviewCtrl.fetchReviews(widget.product.id);
+    });
   }
 
   @override

@@ -34,8 +34,9 @@ class AdminSubCategoryController extends GetxController {
       await fetchSubCategories(categoryId);
       Get.snackbar('Success', 'Sub-category added');
     } catch (e) {
-      Get.snackbar('Error', e.toString());
-    } finally {
+Future.microtask(() {
+    Get.snackbar('Error', e.toString());
+  });    } finally {
       isLoading.value = false;
     }
   }

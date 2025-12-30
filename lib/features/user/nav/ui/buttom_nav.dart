@@ -25,7 +25,10 @@ class UserRootPage extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           switchInCurve: Curves.easeInOut,
           switchOutCurve: Curves.easeInOut,
-          child: pages[nav.currentIndex.value],
+          child: KeyedSubtree(
+            key: ValueKey(nav.currentIndex.value),
+            child: pages[nav.currentIndex.value],
+          ),
         ),
 
         /// BOTTOM NAVIGATION

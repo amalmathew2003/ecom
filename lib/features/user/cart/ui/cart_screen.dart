@@ -70,10 +70,11 @@ class _CartScreenState extends State<CartScreen> {
                       onTap: () {
                         Get.to(
                           () => ProductDetailsScreen(product: product),
-                          transition: Transition.fadeIn,
+                          transition: Transition.cupertino,
                           duration: const Duration(milliseconds: 300),
                         );
                       },
+
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 14),
                         padding: const EdgeInsets.all(14),
@@ -96,11 +97,14 @@ class _CartScreenState extends State<CartScreen> {
                               child: Stack(
                                 children: [
                                   Image.network(
-                                    product.imageUrl.first,
+                                    product.imageUrl.isNotEmpty
+                                        ? product.imageUrl.first
+                                        : 'https://via.placeholder.com/150',
                                     width: 90,
                                     height: 90,
                                     fit: BoxFit.cover,
                                   ),
+
                                   Positioned(
                                     bottom: 6,
                                     right: 6,
