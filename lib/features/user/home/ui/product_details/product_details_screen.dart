@@ -4,7 +4,7 @@ import 'package:ecom/features/user/checkout/ui/checkout_screen.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/features/user/home/ui/product_details/widget/full_screen_image_viewer.dart';
 import 'package:ecom/features/user/nav/controller/nav_controller.dart';
-import 'package:ecom/service/checkout_service/checkout_controller.dart';
+import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';

@@ -33,4 +33,13 @@ class OrderController extends GetxController {
 
     isLoading.value = false;
   }
+
+  Future<void> cancelOrder(String orderId) async {
+    await supabase
+        .from('orders')
+        .update({'payment_status': 'CANCELLED'})
+        .eq('id', orderId);
+
+    fetchOrders();
+  }
 }

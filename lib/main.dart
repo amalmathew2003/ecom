@@ -1,6 +1,6 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
 import 'package:ecom/features/user/orders/controller/oder_controller.dart';
-import 'package:ecom/service/checkout_service/checkout_controller.dart';
+import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';

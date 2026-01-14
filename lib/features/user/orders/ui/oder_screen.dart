@@ -1,4 +1,5 @@
 import 'package:ecom/features/user/orders/controller/oder_controller.dart';
+import 'package:ecom/features/user/orders/ui/oder_details_screen.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,7 +9,7 @@ class OrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-final orderCtrl = Get.find<OrderController>();
+    final orderCtrl = Get.find<OrderController>();
 
     return Scaffold(
       backgroundColor: ColorConst.bg,
@@ -48,57 +49,86 @@ final orderCtrl = Get.find<OrderController>();
             itemBuilder: (_, index) {
               final order = orderCtrl.orders[index];
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: ColorConst.card,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .35),
-                      blurRadius: 14,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    /// LEFT INFO
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "₹${order.amount.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            color: ColorConst.accent,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          _formatDate(order.createdAt),
-                          style: const TextStyle(
-                            color: ColorConst.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          order.orderType.replaceAll('_', ' '),
-                          style: const TextStyle(
-                            color: ColorConst.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
+              return InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () async {
+                  final result = await Get.to(
+                    () => OrderDetailsScreen(order: order),
+                  );
 
-                    /// STATUS CHIP
-                    _StatusChip(status: order.status),
-                  ],
+                  if (result == 'cancel') {
+                    await orderCtrl.cancelOrder(order.id);
+                    Get.snackbar(
+                      'Cancelled',
+                      'Order cancelled successfully',
+                      backgroundColor: ColorConst.card,
+                      colorText: ColorConst.textLight,
+                    );
+                  }
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: ColorConst.card,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: .35),
+                        blurRadius: 14,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      /// LEFT INFO
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "₹${order.amount.toStringAsFixed(0)}",
+                            style: const TextStyle(
+                              color: ColorConst.accent,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _formatDate(order.createdAt),
+                            style: const TextStyle(
+                              color: ColorConst.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            order.orderType.replaceAll('_', ' '),
+                            style: const TextStyle(
+                              color: ColorConst.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      /// RIGHT SIDE
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _StatusChip(status: order.status),
+                          const SizedBox(height: 10),
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 14,
+                            color: ColorConst.textMuted,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -148,6 +178,8 @@ class _StatusChip extends StatelessWidget {
         return Colors.greenAccent;
       case 'FAILED':
         return ColorConst.danger;
+      case 'CANCELLED':
+        return Colors.grey;
       default:
         return Colors.orangeAccent;
     }
