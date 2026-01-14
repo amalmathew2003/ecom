@@ -1,4 +1,6 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
+import 'package:ecom/features/user/checkout/ui/checkout_screen.dart';
+import 'package:ecom/service/checkout_service/checkout_controller.dart';
 import 'package:ecom/features/user/home/ui/product_details/product_details_screen.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +19,11 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    cartCtrl.fetchCart();
+
+    // fetch cart AFTER first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      cartCtrl.fetchCart();
+    });
   }
 
   @override
@@ -211,41 +217,50 @@ class _CartScreenState extends State<CartScreen> {
       ),
 
       /// CHECKOUT BAR
-      bottomNavigationBar: Obx(
-        () => Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: ColorConst.card,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: .35),
-                blurRadius: 16,
-                offset: const Offset(0, -6),
-              ),
-            ],
-          ),
-          child: SizedBox(
-            height: 56,
-            child: ElevatedButton(
-              onPressed: cartCtrl.cartItems.isEmpty ? null : () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorConst.accent,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+      /// Replace the bottomNavigationBar block in CartScreen
+      bottomNavigationBar: Obx(() {
+        if (cartCtrl.cartItems.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return SafeArea(
+          // Added SafeArea
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              // Use a Column with MainAxisSize.min
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 56,
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final checkoutCtrl = Get.find<CheckoutController>();
+                      checkoutCtrl.setCartChekout();
+                      Get.to(() => const CheckoutScreen());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorConst.accent,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: Text(
+                      "Checkout • ₹ ${cartCtrl.totalAmount.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                "Checkout • ₹ ${cartCtrl.totalAmount.toStringAsFixed(2)}",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 

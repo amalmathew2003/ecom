@@ -9,7 +9,6 @@ class CartController extends GetxController {
 
   String get userId => supabase.auth.currentUser!.id;
 
-  /// ================= FETCH CART =================
   Future<void> fetchCart() async {
     try {
       final response = await supabase
@@ -17,13 +16,16 @@ class CartController extends GetxController {
           .select('id, quantity, products(*)')
           .eq('user_id', userId);
 
+      // ✅ Use .assignAll AND call .refresh()
       cartItems.assignAll(
         (response as List).map((e) => CartItemModel.fromJson(e)).toList(),
       );
+      cartItems.refresh();
     } catch (e) {
-      // Get.snackbar('Error', e.toString());
+      print("Fetch Error: $e");
     }
   }
+
 
   /// ================= ADD TO CART =================
   Future<void> addToCart({

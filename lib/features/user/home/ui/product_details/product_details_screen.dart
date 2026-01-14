@@ -1,8 +1,10 @@
 import 'package:ecom/core/routes/app_routes.dart';
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
+import 'package:ecom/features/user/checkout/ui/checkout_screen.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/features/user/home/ui/product_details/widget/full_screen_image_viewer.dart';
 import 'package:ecom/features/user/nav/controller/nav_controller.dart';
+import 'package:ecom/service/checkout_service/checkout_controller.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
@@ -444,6 +446,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
                           // 1️⃣ Set tab BEFORE popping
                           nav.changeTab(1);
+                          await cartCtrl.fetchCart();
 
                           // 2️⃣ Pop back to UserRootPage
                           Get.until(
@@ -462,7 +465,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           );
                         }
                       },
- 
+
                 child: Text(
                   alreadyInCart ? "Go to Cart" : "Add to Cart",
                   style: const TextStyle(
@@ -485,7 +488,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                final checkoutCrl = Get.find<CheckoutController>();
+                checkoutCrl.setBuyNow(
+                  productId: widget.product.id,
+                  amount: widget.product.price,
+                );
+                Get.to(() => const CheckoutScreen());
+              },
               child: const Text(
                 "Buy Now",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
