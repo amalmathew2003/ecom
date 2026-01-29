@@ -18,47 +18,43 @@ class CategoryChip extends StatelessWidget {
     return AnimatedScale(
       scale: isSelected ? 1.05 : 1.0,
       duration: const Duration(milliseconds: 180),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(30),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: isSelected
-                  ? const LinearGradient(
-                      colors: [ColorConst.yellow, Color(0xFFB89600)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: isSelected ? null : ColorConst.card,
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: isSelected ? Colors.transparent : ColorConst.surface,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: isSelected ? 0.25 : 0.08,
-                  ),
-                  blurRadius: isSelected ? 12 : 6,
-                  offset: const Offset(0, 6),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: isSelected ? ColorConst.primaryGradient : null,
+                color: isSelected ? null : ColorConst.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? Colors.transparent : ColorConst.surface,
+                  width: 1.5,
                 ),
-              ],
-            ),
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isSelected ? Colors.black : ColorConst.textLight,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                letterSpacing: 0.3,
+                boxShadow: [
+                  if (isSelected)
+                    BoxShadow(
+                      color: ColorConst.primary.withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : ColorConst.textMuted,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 14,
+                    letterSpacing: 0.2,
+                  ),
+                ),
               ),
             ),
           ),

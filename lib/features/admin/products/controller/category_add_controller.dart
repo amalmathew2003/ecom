@@ -14,12 +14,15 @@ class AdminCategoryController extends GetxController {
   }
 
   Future<void> fetchCategories() async {
-    final res = await supabase
-        .from('categories')
-        .select()
-        .order('created_at');
-
-    categories.value = List<Map<String, dynamic>>.from(res);
+    try {
+      final res = await supabase
+          .from('categories')
+          .select()
+          .order('created_at');
+      categories.value = List<Map<String, dynamic>>.from(res);
+    } catch (e) {
+      print("Error fetching categories: $e");
+    }
   }
 
   Future<void> addCategory(String name) async {
@@ -27,19 +30,25 @@ class AdminCategoryController extends GetxController {
 
     try {
       isLoading.value = true;
-
-      await supabase.from('categories').insert({
-        'name': name.trim(),
-      });
-
+      await supabase.from('categories').insert({'name': name.trim()});
       await fetchCategories();
       Get.snackbar('Success', 'Category added');
     } catch (e) {
-Future.microtask(() {
-   Future.microtask(() {
-    Get.snackbar('Error', e.toString());
-  });
-  });    } finally {
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> deleteCategory(String id) async {
+    try {
+      isLoading.value = true;
+      await supabase.from('categories').delete().eq('id', id);
+      await fetchCategories();
+      Get.snackbar('Success', 'Category deleted');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete category: $e');
+    } finally {
       isLoading.value = false;
     }
   }

@@ -33,49 +33,31 @@ class UserRootPage extends StatelessWidget {
 
         /// BOTTOM NAVIGATION
         bottomNavigationBar: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(26),
-            child: Container(
-              decoration: BoxDecoration(
-                color: ColorConst.card,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .35),
-                    blurRadius: 14,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+          child: Container(
+            height: 70,
+            decoration: BoxDecoration(
+              color: ColorConst.card.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: ColorConst.surface.withOpacity(0.5),
+                width: 1.5,
               ),
-              child: BottomNavigationBar(
-                backgroundColor: Colors.transparent,
-                currentIndex: nav.currentIndex.value,
-                onTap: nav.changeTab,
-                type: BottomNavigationBarType.fixed,
-                elevation: 0,
-                showUnselectedLabels: true,
-
-                selectedItemColor: ColorConst.accent,
-                unselectedItemColor: ColorConst.textMuted.withValues(alpha: .7),
-
-                items: [
-                  _navItem(
-                    icon: Icons.home_rounded,
-                    label: 'Home',
-                    isActive: nav.currentIndex.value == 0,
-                  ),
-                  _navItem(
-                    icon: Icons.shopping_cart_outlined,
-                    label: 'Cart',
-                    isActive: nav.currentIndex.value == 1,
-                  ),
-                  _navItem(
-                    icon: Icons.person_outline,
-                    label: 'Profile',
-                    isActive: nav.currentIndex.value == 2,
-                  ),
-                ],
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.grid_view_rounded, 'Home', nav),
+                _buildNavItem(1, Icons.shopping_bag_rounded, 'Cart', nav),
+                _buildNavItem(2, Icons.person_rounded, 'Profile', nav),
+              ],
             ),
           ),
         ),
@@ -83,24 +65,45 @@ class UserRootPage extends StatelessWidget {
     );
   }
 
-  /// NAV ITEM (UI ONLY)
-  BottomNavigationBarItem _navItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-  }) {
-    return BottomNavigationBarItem(
-      label: label,
-      icon: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+  Widget _buildNavItem(
+    int index,
+    IconData icon,
+    String label,
+    UserNavController nav,
+  ) {
+    final isActive = nav.currentIndex.value == index;
+    return GestureDetector(
+      onTap: () => nav.changeTab(index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? ColorConst.accent.withValues(alpha: .18)
+              ? ColorConst.primary.withOpacity(0.1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: Icon(icon, size: 22),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? ColorConst.primary : ColorConst.textMuted,
+              size: 26,
+            ),
+            if (isActive)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                height: 4,
+                width: 4,
+                decoration: const BoxDecoration(
+                  color: ColorConst.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

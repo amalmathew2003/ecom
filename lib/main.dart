@@ -11,6 +11,8 @@ import 'core/config/supabase_config.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/controller/auth_controller.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
@@ -25,11 +27,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      theme: ThemeData(scaffoldBackgroundColor: ColorConst.bg),
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: ColorConst.bg,
+        textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme)
+            .apply(
+              bodyColor: ColorConst.textLight,
+              displayColor: ColorConst.textLight,
+            ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: ColorConst.primary,
+          brightness: Brightness.dark,
+          surface: ColorConst.card,
+        ),
+      ),
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.pages,
-
       initialBinding: BindingsBuilder(() {
         Get.put(AuthController(), permanent: true);
         Get.put(CartController(), permanent: true);

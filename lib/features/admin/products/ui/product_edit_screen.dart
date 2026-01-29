@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:ecom/features/admin/products/controller/product_controller.dart';
+import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,7 +21,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
   late TextEditingController nameCtrl;
   late TextEditingController descCtrl;
   late TextEditingController priceCtrl;
-  late TextEditingController stockCtrl; // ✅ NEW
+  late TextEditingController stockCtrl;
 
   File? selectedImage;
   int currentImageIndex = 0;
@@ -38,7 +39,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
     nameCtrl = TextEditingController(text: product.name);
     descCtrl = TextEditingController(text: product.description);
     priceCtrl = TextEditingController(text: product.price.toString());
-    stockCtrl = TextEditingController(text: product.stock.toString()); // ✅
+    stockCtrl = TextEditingController(text: product.stock.toString());
   }
 
   Future<void> pickImage() async {
@@ -60,11 +61,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
     final stock = int.tryParse(stockCtrl.text.trim());
 
     if (stock == null || stock < 0) {
-      Get.snackbar(
-        'Error',
-        'Invalid stock value',
-        snackPosition: SnackPosition.TOP,
-      );
+      Get.snackbar('Error', 'Invalid stock value');
       return;
     }
 
@@ -73,7 +70,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
       name: nameCtrl.text.trim(),
       description: descCtrl.text.trim(),
       price: double.parse(priceCtrl.text.trim()),
-      stock: stock, // ✅ PASS STOCK
+      stock: stock,
       newimage: selectedImage,
       imageIndex: currentImageIndex,
       imageUrl: product.imageUrl,
@@ -83,25 +80,32 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
 
     if (success) {
       Get.back();
-      Get.snackbar(
-        'Success',
-        'Product updated successfully',
-        snackPosition: SnackPosition.TOP,
-      );
+      Get.snackbar('Success', 'Product updated successfully');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF192230),
+      backgroundColor: ColorConst.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF192230),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: const Text(
           "Edit Product",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: ColorConst.textLight,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: ColorConst.textLight,
+            size: 20,
+          ),
+          onPressed: () => Get.back(),
         ),
       ),
       body: Obx(() {
@@ -112,29 +116,39 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
         final images = product.imageUrl;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// ================= IMAGE SECTION =================
+                /// IMAGE SECTION
+                const Text(
+                  'Product Media',
+                  style: TextStyle(
+                    color: ColorConst.textLight,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Stack(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: SizedBox(
-                        height: MediaQuery.sizeOf(context).height * .40,
-                        width: double.infinity,
+                    Container(
+                      height: MediaQuery.sizeOf(context).height * .35,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: ColorConst.card,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: ColorConst.surface, width: 2),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
                         child: selectedImage != null
-                            ? Image.file(
-                                selectedImage!,
-                                fit: BoxFit.cover,
-                              )
+                            ? Image.file(selectedImage!, fit: BoxFit.cover)
                             : PageView.builder(
                                 itemCount: images.length,
-                                onPageChanged: (i) {
-                                  currentImageIndex = i;
-                                },
+                                onPageChanged: (i) => currentImageIndex = i,
                                 itemBuilder: (_, index) {
                                   return Image.network(
                                     images[index],
@@ -147,16 +161,20 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
 
                     /// IMAGE BUTTONS
                     Positioned(
-                      bottom: 14,
-                      right: 14,
-                      child:
-                          _iconButton(icon: Icons.edit, onTap: pickImage),
+                      bottom: 12,
+                      right: 12,
+                      child: _circleActionButton(
+                        icon: Icons.edit_rounded,
+                        color: ColorConst.accent,
+                        onTap: pickImage,
+                      ),
                     ),
                     Positioned(
-                      bottom: 14,
-                      left: 14,
-                      child: _iconButton(
-                        icon: Icons.add,
+                      bottom: 12,
+                      right: 64,
+                      child: _circleActionButton(
+                        icon: Icons.add_photo_alternate_rounded,
+                        color: ColorConst.primary,
                         onTap: () async {
                           final picked = await picker.pickImage(
                             source: ImageSource.gallery,
@@ -174,69 +192,103 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
-                /// ================= INPUTS =================
-                _modernField(
+                /// INPUTS SECTION
+                const Text(
+                  'Product Details',
+                  style: TextStyle(
+                    color: ColorConst.textLight,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                _buildModernField(
                   controller: nameCtrl,
                   label: "Product Name",
+                  icon: Icons.shopping_bag_outlined,
                   validator: (v) =>
                       v == null || v.isEmpty ? "Enter name" : null,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
-                _modernField(
+                _buildModernField(
                   controller: descCtrl,
                   label: "Description",
-                  maxLines: 3,
+                  icon: Icons.description_outlined,
+                  maxLines: 4,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
-                _modernField(
-                  controller: priceCtrl,
-                  label: "Price",
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 14),
-
-                _modernField(
-                  controller: stockCtrl,
-                  label: "Stock Quantity", // ✅ NEW FIELD
-                  keyboardType: TextInputType.number,
-                  validator: (v) =>
-                      v == null || v.isEmpty ? "Enter stock" : null,
-                ),
-
-                const SizedBox(height: 28),
-
-                /// ================= UPDATE BUTTON =================
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: productCtrl.isLoading.value
-                        ? null
-                        : updateProduct,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFCD00),
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildModernField(
+                        controller: priceCtrl,
+                        label: "Price",
+                        icon: Icons.payments_outlined,
+                        keyboardType: TextInputType.number,
                       ),
                     ),
-                    child: productCtrl.isLoading.value
-                        ? const CircularProgressIndicator(
-                            color: Colors.black,
-                          )
-                        : const Text(
-                            "Update Product",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildModernField(
+                        controller: stockCtrl,
+                        label: "Stock",
+                        icon: Icons.inventory_2_outlined,
+                        keyboardType: TextInputType.number,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? "Required" : null,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 48),
+
+                /// UPDATE BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: ColorConst.primaryGradient,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: ColorConst.primary.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: productCtrl.isLoading.value
+                          ? null
+                          : updateProduct,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: productCtrl.isLoading.value
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Save Changes",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -245,53 +297,65 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
     );
   }
 
-  /// ================= UI HELPERS =================
-  Widget _modernField({
+  Widget _buildModernField({
     required TextEditingController controller,
     required String label,
+    required IconData icon,
     int maxLines = 1,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFFB0B6BE)),
-        filled: true,
-        fillColor: const Color(0xFF2C2F38),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorConst.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ColorConst.surface, width: 1.5),
+      ),
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        validator: validator,
+        style: const TextStyle(
+          color: ColorConst.textLight,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: ColorConst.textMuted),
+          prefixIcon: Icon(icon, color: ColorConst.primary, size: 22),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );
   }
 
-  Widget _iconButton({
+  Widget _circleActionButton({
     required IconData icon,
+    required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(50),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFCD00),
+          color: ColorConst.card,
           shape: BoxShape.circle,
+          border: Border.all(color: color.withOpacity(0.5), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: .3),
-              blurRadius: 6,
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.black),
+        child: Icon(icon, color: color, size: 22),
       ),
     );
   }

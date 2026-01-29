@@ -4,6 +4,10 @@ class OrderModel {
   final String status;
   final DateTime createdAt;
   final String orderType;
+  final String paymentMethod;
+  final String? userName;
+  final String? userEmail;
+  final String? managerName;
 
   OrderModel({
     required this.id,
@@ -11,20 +15,25 @@ class OrderModel {
     required this.status,
     required this.createdAt,
     required this.orderType,
+    required this.paymentMethod,
+    this.userName,
+    this.userEmail,
+    this.managerName,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
+    final profiles = json['profiles'];
+    final manager = json['manager'];
     return OrderModel(
       id: json['id'].toString(),
-
-      // ✅ FIX: use `amount`, not `total`
       amount: (json['amount'] as num).toDouble(),
-
-      // ✅ FIX: use `payment_status`
       status: _parseStatus(json['payment_status']),
-
       createdAt: DateTime.parse(json['created_at']),
       orderType: json['order_type']?.toString() ?? '',
+      paymentMethod: json['payment_method']?.toString() ?? 'COD',
+      userName: profiles?['full_name'],
+      userEmail: profiles?['email'],
+      managerName: manager?['full_name'],
     );
   }
 

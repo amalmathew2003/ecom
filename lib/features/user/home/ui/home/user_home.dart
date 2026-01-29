@@ -1,4 +1,3 @@
-import 'package:ecom/core/routes/app_routes.dart';
 import 'package:ecom/features/auth/controller/auth_controller.dart';
 import 'package:ecom/features/user/home/controller/nav_category_chip_controller.dart';
 import 'package:ecom/features/user/home/controller/product_controller.dart';
@@ -23,372 +22,298 @@ class UserHome extends StatelessWidget {
   );
   final ProductController productCtrl = Get.put(ProductController());
   final ProfileController profileCtrl = Get.find<ProfileController>();
+  final searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorConst.bg,
-
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.only(bottom: 150),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HEADER
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
-              decoration: const BoxDecoration(
-                color: ColorConst.bg,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(24),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'NeoMart',
-                        style: TextStyle(
-                          color: ColorConst.accent,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Obx(() {
-                        final profile = profileCtrl.profile.value;
+            /// 🏷️ HEADER
+            _buildHeader(),
 
-                        return Text(
-                          'Welcome 👋 ${profile?.fullName ?? 'User'}',
-                          style: const TextStyle(
-                            color: ColorConst.textMuted,
-                            fontSize: 16,
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: ColorConst.surface,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.logout, color: ColorConst.accent),
-                      onPressed: () async {
-                        await auth.logout();
-                        Get.offAllNamed(AppRoutes.login);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            /// 🎨 NEW ARRIVALS
+            _buildArrivals(),
 
-            /// NEW ARRIVALS
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: ProductCarousel(),
-            ),
+            /// 📂 CATEGORIES
+            _buildCategories(context),
 
-            /// CATEGORIES
-            _SectionCard(
-              title: 'Browse Categories',
-              actionText: 'Explore',
-              onActionTap: () => _showCategorySheet(context),
-              child: SizedBox(
-                height: 50,
-                child: Obx(() {
-                  final selectedIndex = categoryCtrl.selectedIndex.value;
+            /// ✨ RECOMMENDATIONS
+            _buildRecommendations(),
 
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: categoryCtrl.categories.length,
-                    itemBuilder: (context, index) {
-                      final cat = categoryCtrl.categories[index];
-
-                      return CategoryChip(
-                        title: cat['name'],
-                        isSelected: selectedIndex == index, // ✅ works
-                        onTap: () {
-                          categoryCtrl.select(index); // ✅ updates
-                          final categoryId = cat['id'].toString();
-                          productCtrl.fetchProducts(categoryId: categoryId);
-                          subCategoryCtrl.fetchSubCategories(categoryId);
-                        },
-                      );
-                    },
-                  );
-                }),
-              ),
-            ),
-
-            /// SUB CATEGORIES
-            Obx(() {
-              if (subCategoryCtrl.subCategories.isEmpty) {
-                return const SizedBox();
-              }
-              return _SectionCard(
-                title: 'Refine by',
-                actionText: 'Filter',
-                onActionTap: () => _showFilterSheet(context),
-                child: SizedBox(
-                  height: 44,
-                  child: Obx(() {
-                    final selected = subCategoryCtrl.selectedIndex.value;
-
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: subCategoryCtrl.subCategories.length,
-                      itemBuilder: (context, index) {
-                        final sub = subCategoryCtrl.subCategories[index];
-
-                        return CategoryChip(
-                          title: sub['name'],
-                          isSelected: selected == index, // ✅ FIXED
-                          onTap: () {
-                            subCategoryCtrl.select(index); // ✅ updates state
-
-                            productCtrl.fetchProductsBySubCategory(
-                              subCategoryId: sub['id'].toString(),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  }),
-                ),
-              );
-            }),
-
-            /// PRODUCTS
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Popular Products',
-                style: TextStyle(
-                  color: ColorConst.textLight,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Obx(() {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Skeletonizer(
-                  enabled: productCtrl.isLoading.value,
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: productCtrl.isLoading.value
-                        ? 6
-                        : productCtrl.products.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
-                          childAspectRatio: 0.72,
-                        ),
-                    itemBuilder: (_, i) {
-                      /// 👇 KEY FIX
-                      final product = productCtrl.isLoading.value
-                          ? ProductModel.skeleton()
-                          : productCtrl.products[i];
-
-                      return ProductCard(product: product);
-                    },
-                  ),
-                ),
-              );
-            }),
+            /// 🛍️ POPULAR PRODUCTS (OR SEARCH RESULTS)
+            _buildProductSection(),
           ],
         ),
       ),
     );
   }
 
-  /// ==========================
-  /// CATEGORY BOTTOM SHEET
-  void _showCategorySheet(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: ColorConst.card,
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Obx(() {
-            return GridView.builder(
-              itemCount: categoryCtrl.categories.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-              ),
-              itemBuilder: (_, index) {
-                final cat = categoryCtrl.categories[index];
-
-                return GestureDetector(
-                  onTap: () {
-                    categoryCtrl.select(index);
-                    final categoryId = cat['id'].toString();
-                    productCtrl.fetchProducts(categoryId: categoryId);
-                    subCategoryCtrl.fetchSubCategories(categoryId);
-                    Navigator.pop(context);
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: ColorConst.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            cat['name'][0].toUpperCase(),
-                            style: const TextStyle(
-                              color: ColorConst.accent,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        cat['name'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: ColorConst.textLight,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          }),
-        );
-      },
-    );
-  }
-
-  /// ==========================
-  /// FILTER SHEET
-  void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: ColorConst.card,
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Sort & Filter',
-                style: TextStyle(
-                  color: ColorConst.textLight,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                title: const Text(
-                  'Price: Low to High',
-                  style: TextStyle(color: ColorConst.textLight),
-                ),
-                onTap: () {
-                  productCtrl.sortByPriceLowToHigh();
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text(
-                  'Price: High to Low',
-                  style: TextStyle(color: ColorConst.textLight),
-                ),
-                onTap: () {
-                  productCtrl.sortByPriceHighToLow();
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// ==========================
-/// SECTION CARD (DARK)
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final String actionText;
-  final VoidCallback? onActionTap;
-  final Widget child;
-
-  const _SectionCard({
-    required this.title,
-    required this.actionText,
-    required this.child,
-    this.onActionTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ColorConst.card,
-        borderRadius: BorderRadius.circular(18),
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'NeoMart',
+                    style: TextStyle(
+                      color: ColorConst.primary,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                  Obx(() {
+                    final name = profileCtrl.profile.value?.fullName ?? 'User';
+                    return Text(
+                      'Hey $name, find your style 👋',
+                      style: const TextStyle(
+                        color: ColorConst.textMuted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  }),
+                ],
+              ),
+              _circleBtn(Icons.notifications_active_rounded),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          /// SEARCH BAR
+          Container(
+            height: 55,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: ColorConst.card,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: ColorConst.surface, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: ColorConst.textMuted),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    onChanged: (val) => productCtrl.searchProducts(val),
+                    style: const TextStyle(color: ColorConst.textLight),
+                    decoration: const InputDecoration(
+                      hintText: 'Search for luxury products...',
+                      hintStyle: TextStyle(
+                        color: ColorConst.textMuted,
+                        fontSize: 14,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                if (searchController.text.isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      searchController.clear();
+                      productCtrl.fetchProducts();
+                    },
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: ColorConst.textMuted,
+                      size: 20,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildArrivals() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Text(
+            "New Arrivals",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        ProductCarousel(),
+      ],
+    );
+  }
+
+  Widget _buildCategories(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Trend Clusters',
+                style: TextStyle(
                   color: ColorConst.textLight,
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
-              GestureDetector(
-                onTap: onActionTap,
-                child: Text(
-                  actionText,
-                  style: const TextStyle(
-                    color: ColorConst.accent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
+              TextButton(
+                onPressed: () {},
+                child: const Text(
+                  "Refine",
+                  style: TextStyle(color: ColorConst.primary),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          child,
-        ],
+        ),
+        SizedBox(
+          height: 48,
+          child: Obx(() {
+            final selectedIndex = categoryCtrl.selectedIndex.value;
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              scrollDirection: Axis.horizontal,
+              itemCount: categoryCtrl.categories.length,
+              itemBuilder: (_, index) {
+                final cat = categoryCtrl.categories[index];
+                return CategoryChip(
+                  title: cat['name'],
+                  isSelected: selectedIndex == index,
+                  onTap: () {
+                    categoryCtrl.select(index);
+                    productCtrl.fetchProducts(categoryId: cat['id'].toString());
+                    subCategoryCtrl.fetchSubCategories(cat['id'].toString());
+                  },
+                );
+              },
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 32, 20, 16),
+          child: Text(
+            'Curated For You',
+            style: TextStyle(
+              color: ColorConst.textLight,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        Obx(() {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Skeletonizer(
+              enabled: productCtrl.isLoading.value,
+              child: GridView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: productCtrl.isLoading.value
+                    ? 6
+                    : productCtrl.products.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.72,
+                ),
+                itemBuilder: (_, i) {
+                  final product = productCtrl.isLoading.value
+                      ? ProductModel.skeleton()
+                      : productCtrl.products[i];
+                  return ProductCard(product: product);
+                },
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildRecommendations() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 32, 20, 16),
+          child: Text(
+            'Exclusive Picks',
+            style: TextStyle(
+              color: ColorConst.textLight,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 280,
+          child: Obx(() {
+            if (productCtrl.recommendedProducts.isEmpty)
+              return const Center(
+                child: Text(
+                  "Curating best picks...",
+                  style: TextStyle(color: ColorConst.textMuted),
+                ),
+              );
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemCount: productCtrl.recommendedProducts.length,
+              itemBuilder: (context, index) {
+                final product = productCtrl.recommendedProducts[index];
+                return Container(
+                  width: 170,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: ProductCard(product: product),
+                );
+              },
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _circleBtn(IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorConst.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ColorConst.surface),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: ColorConst.textLight, size: 22),
+        onPressed: () {},
       ),
     );
   }

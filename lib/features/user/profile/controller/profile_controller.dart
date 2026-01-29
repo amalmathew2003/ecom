@@ -16,20 +16,22 @@ class ProfileController extends GetxController {
 
   Future<void> fetchProfile() async {
     try {
-      isLoading.value = true;
-
       final user = supabase.auth.currentUser;
       if (user == null) return;
+
+      isLoading.value = true;
 
       final data = await supabase
           .from('profiles')
           .select()
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-      profile.value = ProfileModel.fromJson(data);
+      if (data != null) {
+        profile.value = ProfileModel.fromJson(data);
+      }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      print("Profile Fetch Error: $e");
     } finally {
       isLoading.value = false;
     }

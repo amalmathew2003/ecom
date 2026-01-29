@@ -26,6 +26,9 @@ class AuthService {
       'full_name': name,
       'role': 'user',
     });
+
+    // 🚀 SYNC Profile state
+    Get.find<ProfileController>().fetchProfile();
   }
 
   Future<void> logout() async {

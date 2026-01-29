@@ -15,23 +15,32 @@ class OrderController extends GetxController {
   }
 
   Future<void> fetchOrders() async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
 
-    isLoading.value = true;
+      isLoading.value = true;
 
-    final response = await supabase
-        .from('orders')
-        .select()
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false);
+      final response = await supabase
+          .from('orders')
+          .select('*, manager:managed_by(full_name)')
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
 
-    orders.assignAll(
-      (response as List).map((e) => OrderModel.fromJson(e)).toList(),
-    );
-    print("Orders count: ${response.length}");
+      print("📦 DEBUG: Fetched ${response.length} orders for user ${user.id}");
 
-    isLoading.value = false;
+      orders.assignAll(
+        (response as List).map((e) => OrderModel.fromJson(e)).toList(),
+      );
+    } catch (e) {
+      print("❌ Order Fetch Error: $e");
+      Get.snackbar(
+        'Order Sync Error',
+        'We couldn\'t load your purchase history. Try pulling to refresh.',
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> cancelOrder(String orderId) async {

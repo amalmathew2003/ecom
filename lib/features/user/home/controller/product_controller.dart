@@ -8,20 +8,86 @@ class ProductController extends GetxController {
   final products = <ProductModel>[].obs;
   final newArrivals = <ProductModel>[].obs;
   final isLoading = false.obs;
+  final isSearching = false.obs;
+  final recommendedProducts = <ProductModel>[].obs;
 
   @override
   void onInit() {
-    fetchProducts(); // All products
-    fetchNewArrivals(); // Latest 5
+    fetchProducts();
+    fetchNewArrivals();
+    fetchRecommendations();
     super.onInit();
+  }
+
+  /// 🔹 Search Products
+  Future<void> searchProducts(String query) async {
+    if (query.isEmpty) {
+      fetchProducts();
+      return;
+    }
+
+    try {
+      isSearching.value = true;
+      isLoading.value = true;
+
+      final response = await supabase
+          .from('products')
+          .select()
+          .ilike('name', '%$query%')
+          .order('created_at', ascending: false);
+
+      products.value = (response as List)
+          .map((e) => ProductModel.fromJson(e))
+          .toList();
+    } catch (e) {
+      print("Search Error: $e");
+    } finally {
+      isLoading.value = false;
+      isSearching.value = false;
+    }
+  }
+
+  /// 🔹 Recommendations for Home
+  Future<void> fetchRecommendations() async {
+    try {
+      final response = await supabase
+          .from('products')
+          .select()
+          .order('rating', ascending: false)
+          .limit(8);
+
+      recommendedProducts.assignAll(
+        (response as List).map((e) => ProductModel.fromJson(e)).toList(),
+      );
+    } catch (e) {
+      print("Recommendations error: $e");
+    }
+  }
+
+  /// 🔹 Fetch Related Products
+  Future<List<ProductModel>> fetchRelatedProducts(
+    String categoryId,
+    String currentProductId,
+  ) async {
+    try {
+      final response = await supabase
+          .from('products')
+          .select()
+          .eq('category_id', categoryId)
+          .neq('id', currentProductId)
+          .limit(6);
+
+      return (response as List).map((e) => ProductModel.fromJson(e)).toList();
+    } catch (e) {
+      print("Related products error: $e");
+      return [];
+    }
   }
 
   /// 🔹 Fetch products with optional category filter
   Future<void> fetchProducts({String categoryId = 'all'}) async {
     try {
       isLoading.value = true;
-      await Future.delayed(const Duration(milliseconds: 200));
-
       var query = supabase.from('products').select();
 
       if (categoryId != 'all') {
@@ -34,23 +100,18 @@ class ProductController extends GetxController {
           .map((e) => ProductModel.fromJson(e))
           .toList();
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Could not load products');
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// 🔹 New Arrivals (latest 5 products)
+  /// 🔹 New Arrivals
   Future<void> fetchNewArrivals() async {
     try {
-      final sevenDaysAgo = DateTime.now()
-          .subtract(const Duration(days: 14))
-          .toIso8601String();
-
       final response = await supabase
           .from('products')
           .select()
-          .gte('created_at', sevenDaysAgo) // ✅ only last 7 days
           .order('created_at', ascending: false)
           .limit(5);
 
@@ -58,7 +119,7 @@ class ProductController extends GetxController {
           .map((e) => ProductModel.fromJson(e))
           .toList();
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      print("Arrivals error: $e");
     }
   }
 
@@ -67,7 +128,6 @@ class ProductController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
-
       final response = await supabase
           .from('products')
           .select()
@@ -78,13 +138,12 @@ class ProductController extends GetxController {
           .map((e) => ProductModel.fromJson(e))
           .toList();
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      print("SubCat error: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  //sort price low to high
   void sortByPriceLowToHigh() {
     products.sort((a, b) => a.price.compareTo(b.price));
   }

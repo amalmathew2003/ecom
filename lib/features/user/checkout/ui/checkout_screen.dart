@@ -1,4 +1,5 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
+import 'package:ecom/features/user/orders/controller/oder_controller.dart';
 import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_mode.dart';
@@ -21,6 +22,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final cartCrl = Get.find<CartController>();
   final profileCrl = Get.find<ProfileController>();
   final razorpayService = RazorpayService();
+  final isLoading = false.obs;
 
   @override
   void initState() {
@@ -30,6 +32,55 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (checkoutCrl.mode.value == CheckoutMode.cart) {
       cartCrl.fetchCart();
     }
+
+    /// 💳 Initialize Razorpay once
+    razorpayService.init(
+      onSuccess: _onPaymentSuccess,
+      onError: _onPaymentError,
+    );
+  }
+
+  void _onPaymentSuccess(String paymentId) async {
+    try {
+      isLoading.value = true;
+      if (checkoutCrl.mode.value == CheckoutMode.cart) {
+        await _placeCartOrder(paymentId);
+      } else {
+        await _placeBuyNowOrder(paymentId);
+      }
+
+      // 🔄 Sync orders before navigating back
+      await Get.find<OrderController>().fetchOrders();
+
+      Get.offAllNamed('/user-nav'); // Go back to root
+      Get.snackbar(
+        "Success",
+        "Order placed successfully!",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } catch (e) {
+      print("Transaction Error: $e");
+      Get.defaultDialog(
+        title: "Order Error",
+        middleText:
+            "Payment was successful but we couldn't record your order. Please contact support with Payment ID: $paymentId",
+        textConfirm: "OK",
+        onConfirm: () => Get.back(),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _onPaymentError(String error) {
+    Get.snackbar(
+      "Payment Failed",
+      error,
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+    );
   }
 
   @override
@@ -46,84 +97,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    /// 🔴 FINAL GUARD — this fixes your issue
     final amount = checkoutCrl.payableAmount;
     if (amount <= 0) {
-      Get.snackbar(
-        "Checkout Error",
-        "Amount not ready. Please retry.",
-        backgroundColor: ColorConst.card,
-        colorText: ColorConst.textLight,
-      );
+      Get.snackbar("Error", "Invalid amount. Please try again.");
       return;
     }
 
-    /// ================= COD =================
     if (checkoutCrl.isCod) {
       await _placeCodOrder();
       return;
     }
 
-    /// ================= ONLINE =================
-    _startOnlinePayment();
-  }
-
-  /// ================= ONLINE =================
-  void _startOnlinePayment() {
-    final user = Supabase.instance.client.auth.currentUser!;
-
-    razorpayService.init(
-      onSuccess: (paymentId) async {
-        if (checkoutCrl.mode.value == CheckoutMode.cart) {
-          await _placeCartOrder(paymentId);
-        } else {
-          await _placeBuyNowOrder(paymentId);
-        }
-
-        Get.offAllNamed('/orders');
-        Get.snackbar("Success", "Order placed successfully");
-      },
-      onError: (error) {
-        Get.snackbar("Payment Failed", error);
-      },
-    );
+    /// ONLINE
+    final userEmail = user.email ?? '';
+    final userPhone = profileCrl.profile.value?.phone ?? '';
 
     razorpayService.openChackout(
-      amount: checkoutCrl.payableAmount,
-      email: user.email ?? '',
-      phone: profileCrl.profile.value?.phone ?? '',
+      amount: amount,
+      email: userEmail,
+      phone: userPhone,
     );
   }
 
   /// ================= COD =================
   Future<void> _placeCodOrder() async {
-    await Supabase.instance.client.from('orders').insert({
-      'user_id': userId,
-      'amount': checkoutCrl.payableAmount,
-      'payment_method': 'COD',
-      'payment_status': 'PENDING',
-      'order_type':
-          checkoutCrl.mode.value == CheckoutMode.cart ? 'CART' : 'BUY_NOW',
-    });
+    try {
+      isLoading.value = true;
+      final uid = Supabase.instance.client.auth.currentUser!.id;
 
-    await Supabase.instance.client
-        .from('cart')
-        .delete()
-        .eq('user_id', userId);
+      await Supabase.instance.client.from('orders').insert({
+        'user_id': uid,
+        'amount': checkoutCrl.payableAmount,
+        'payment_method': 'COD',
+        'payment_status': 'PENDING',
+        'order_type': checkoutCrl.mode.value == CheckoutMode.cart
+            ? 'CART'
+            : 'BUY_NOW',
+        if (checkoutCrl.mode.value == CheckoutMode.buyNow)
+          'product_id': checkoutCrl.productId,
+      });
 
-    cartCrl.cartItems.clear();
+      if (checkoutCrl.mode.value == CheckoutMode.cart) {
+        await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
+        cartCrl.cartItems.clear();
+      } else {
+        await Supabase.instance.client
+            .from('cart')
+            .delete()
+            .eq('user_id', uid)
+            .eq('product_id', checkoutCrl.productId!);
+        cartCrl.fetchCart();
+      }
 
-    Get.offAllNamed('/orders');
-    Get.snackbar("Order Placed", "Cash on Delivery selected");
+      // 🔄 Sync orders before navigating back
+      await Get.find<OrderController>().fetchOrders();
+
+      Get.offAllNamed('/user-nav');
+      Get.snackbar("Order Confirmed", "Your COD order has been placed.");
+    } catch (e) {
+      Get.snackbar("Error", "Failed to place order: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
-
-  String get userId =>
-      Supabase.instance.client.auth.currentUser!.id;
 
   /// ================= DB HELPERS =================
   Future<void> _placeCartOrder(String paymentId) async {
+    final uid = Supabase.instance.client.auth.currentUser!.id;
+
     await Supabase.instance.client.from('orders').insert({
-      'user_id': userId,
+      'user_id': uid,
       'amount': cartCrl.totalAmount,
       'payment_id': paymentId,
       'payment_method': 'RAZORPAY',
@@ -131,17 +174,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'order_type': 'CART',
     });
 
-    await Supabase.instance.client
-        .from('cart')
-        .delete()
-        .eq('user_id', userId);
-
+    await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
     cartCrl.cartItems.clear();
   }
 
   Future<void> _placeBuyNowOrder(String paymentId) async {
+    final uid = Supabase.instance.client.auth.currentUser!.id;
+
     await Supabase.instance.client.from('orders').insert({
-      'user_id': userId,
+      'user_id': uid,
       'product_id': checkoutCrl.productId,
       'amount': checkoutCrl.buyNowAomunt,
       'payment_id': paymentId,
@@ -149,59 +190,102 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'payment_status': 'SUCCESS',
       'order_type': 'BUY_NOW',
     });
+
+    await Supabase.instance.client
+        .from('cart')
+        .delete()
+        .eq('user_id', uid)
+        .eq('product_id', checkoutCrl.productId!);
+    cartCrl.fetchCart();
   }
 
-  /// ================= UI =================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColorConst.bg,
-      appBar: AppBar(
-        backgroundColor: ColorConst.bg,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Checkout",
-          style: TextStyle(color: ColorConst.textLight),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: ColorConst.bg,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: const Text(
+              "Checkout",
+              style: TextStyle(
+                color: ColorConst.textLight,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: ColorConst.textLight,
+                size: 20,
+              ),
+              onPressed: () => Get.back(),
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _summaryCard(),
+                const SizedBox(height: 24),
+                const PaymentMethodSelector(),
+                const Spacer(),
+                _payButton(),
+              ],
+            ),
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _summaryCard(),
-            const SizedBox(height: 20),
-
-            /// 🔹 NEW PAYMENT UI
-            const PaymentMethodSelector(),
-
-            const Spacer(),
-            _payButton(),
-          ],
-        ),
-      ),
+        Obx(() {
+          if (isLoading.value) {
+            return Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(color: ColorConst.primary),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+      ],
     );
   }
 
   Widget _summaryCard() {
     return Obx(() {
       return Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: ColorConst.card,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: ColorConst.surface.withOpacity(0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Total",
-                style: TextStyle(color: ColorConst.textMuted)),
+            const Text(
+              "Total Payable",
+              style: TextStyle(
+                color: ColorConst.textMuted,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             Text(
               "₹${checkoutCrl.payableAmount.toStringAsFixed(0)}",
               style: const TextStyle(
-                color: ColorConst.accent,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                color: ColorConst.primary,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ],
@@ -213,18 +297,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _payButton() {
     return SizedBox(
       width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: payment,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ColorConst.accent,
-          foregroundColor: ColorConst.textDark,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      height: 60,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: ColorConst.primaryGradient,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: ColorConst.primary.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: const Text(
-          "Place Order",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        child: ElevatedButton(
+          onPressed: isLoading.value ? null : payment,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          child: const Text(
+            "Place Order",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );

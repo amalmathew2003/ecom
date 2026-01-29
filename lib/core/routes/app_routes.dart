@@ -1,12 +1,12 @@
 import 'package:ecom/features/admin/products/ui/admin_home.dart';
+import 'package:ecom/features/admin/products/ui/staff_dashboard.dart';
 import 'package:ecom/features/auth/ui/login_page.dart';
 import 'package:ecom/features/auth/ui/register_page.dart';
-import 'package:ecom/features/splash/controller/splach_controller.dart';
-import 'package:ecom/features/splash/ui/spalch_screen.dart';
+import 'package:ecom/features/splash/controller/splash_controller.dart';
+import 'package:ecom/features/splash/ui/splash_screen.dart';
 import 'package:ecom/features/user/cart/ui/cart_screen.dart';
 import 'package:ecom/features/user/home/ui/home/user_home.dart';
 import 'package:ecom/features/user/nav/ui/buttom_nav.dart';
-
 import 'package:get/get.dart';
 
 class AppRoutes {
@@ -18,9 +18,10 @@ class AppRoutes {
   static const userproductdetils = '/user-home/product-details';
   static const usercart = '/cart';
   static const adminHome = '/admin-home';
+  static const staffHome = '/staff-home';
 
   static final pages = [
-    /// 🔹 Splash (ONLY first screen)
+    /// 🔹 Splash
     GetPage(
       name: splash,
       page: () => const SplashPage(),
@@ -48,9 +49,12 @@ class AppRoutes {
     /// 🔹 User Home
     GetPage(name: usernav, page: () => const UserRootPage()),
     GetPage(name: userHome, page: () => UserHome()),
-    GetPage(name: usercart, page: () => CartScreen()),
+    GetPage(name: usercart, page: () => const CartScreen()),
 
-    /// 🔹 Admin Home
+    /// 🔹 Admin Console
     GetPage(name: adminHome, page: () => const AdminHome()),
+
+    /// 🔹 Staff Portal
+    GetPage(name: staffHome, page: () => const StaffDashboard()),
   ];
 }

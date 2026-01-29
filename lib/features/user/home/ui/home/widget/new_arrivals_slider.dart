@@ -13,196 +13,139 @@ class ProductCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (productCtrl.newArrivals.isEmpty) {
-        return SizedBox(
-          height: 220,
-          child: Center(
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.88,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blueAccent.withOpacity(.35),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+        return Container(
+          height: 200,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            gradient: ColorConst.primaryGradient,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: ColorConst.primary.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-              padding: const EdgeInsets.all(24),
-              child: Stack(
-                children: [
-                  /// BACKGROUND GLOW
-                  Positioned(
-                    top: -40,
-                    right: -40,
-                    child: Container(
-                      width: 140,
-                      height: 140,
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                top: -20,
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.white.withOpacity(0.1),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(.15),
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ),
-                  ),
-
-                  /// CONTENT
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'COMING SOON',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'New Arrivals Drop',
+                      child: const Text(
+                        'NEW COLLECTION',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Fresh styles • Better prices • Limited stock',
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Winter Sale\nUp to 50% Off',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
                       ),
-                      const SizedBox(height: 16),
-
-                      /// CTA BUTTON
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: const Text(
-                          'Notify Me',
-                          style: TextStyle(
-                            color: Color(0xFF2575FC),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       }
 
       return CarouselSlider(
         options: CarouselOptions(
-          height: 220,
+          height: 200,
           autoPlay: true,
           enlargeCenterPage: true,
-          viewportFraction: 0.8,
+          viewportFraction: 0.85,
         ),
         items: productCtrl.newArrivals.map((product) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.network(
-                    product.imageUrl.first,
-                    fit: BoxFit.cover,
-                  ),
+          return Container(
+            margin: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
                 ),
-
-                /// GRADIENT
-                Positioned.fill(
-                  child: Container(
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(product.imageUrl.first, fit: BoxFit.cover),
+                  Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
+                        end: Alignment.center,
                         colors: [
-                          Colors.black.withValues(alpha: .65),
+                          Colors.black.withOpacity(0.8),
                           Colors.transparent,
                         ],
                       ),
                     ),
                   ),
-                ),
-
-                /// INFO
-                Positioned(
-                  left: 16,
-                  bottom: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          color: ColorConst.textLight,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  Positioned(
+                    left: 20,
+                    bottom: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '₹${product.price}',
-                        style: const TextStyle(
-                          color: ColorConst.price,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 4),
+                        Text(
+                          '₹${product.price}',
+                          style: const TextStyle(
+                            color: ColorConst.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                /// BADGE
-                Positioned(
-                  top: 14,
-                  left: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ColorConst.accent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'NEW',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }).toList(),

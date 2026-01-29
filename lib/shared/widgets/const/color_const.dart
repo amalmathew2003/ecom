@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
 
 class ColorConst {
-  /// BRAND BASE
-  static const navy = Color.fromARGB(255, 20, 27, 39); // deep dark blue
-  static const yellow = Color(0xFFFFCD00); // brand yellow
+  /// BRAND BASE - Midnight Emerald Theme
+  static const primary = Color(0xFF10B981); // Vibrant Emerald
+  static const secondary = Color(0xFF3B82F6); // Electric Blue
+  static const accent = Color(0xFFF59E0B); // Amber Glow
 
   /// BACKGROUNDS
-  static const bg = navy;
-  static const card = Color(0xFF1E2533);
-  static const surface = Color(0xFF2A3242);
+  static const bg = Color(0xFF0F172A); // Deep Slate Blue/Black
+  static const card = Color(0xFF1E293B); // Slate Blue Card
+  static const surface = Color(0xFF334155); // Elevated Surface
 
   /// TEXT
-  static const textDark = navy;
+  static const textDark = Color(0xFF0F172A);
   static const textLight = Colors.white;
-  static const textMuted = Color(0xFFB0B6BE);
+  static const textMuted = Color(0xFF94A3B8); // Slate 400
 
-  /// ACCENTS
-  static const accent = yellow;
-  static const price = yellow;
+  /// GRADIENTS
+  static const primaryGradient = LinearGradient(
+    colors: [primary, secondary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// COMPATIBILITY ALIASES
+  static const price = accent;
+  static const yellow = accent;
 
   /// STATUS
-  static const danger = Colors.redAccent;
+  static const danger = Color(0xFFEF4444);
+  static const success = Color(0xFF10B981);
+  static const warning = Color(0xFFF59E0B);
 }

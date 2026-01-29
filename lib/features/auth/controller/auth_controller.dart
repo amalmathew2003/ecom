@@ -30,6 +30,8 @@ class AuthController extends GetxController {
 
       if (profile?['role'] == 'admin') {
         Get.offAllNamed(AppRoutes.adminHome);
+      } else if (profile?['role'] == 'staff') {
+        Get.offAllNamed(AppRoutes.staffHome);
       } else {
         Get.offAllNamed(AppRoutes.usernav);
       }
@@ -64,14 +66,14 @@ class AuthController extends GetxController {
   }
 
   // 🔹 REGISTER
-  Future<void> register(String email, String password,name) async {
+  Future<void> register(String email, String password, name) async {
     try {
       isLoading.value = true;
 
-      await _service.register(email, password,name);
+      await _service.register(email, password, name);
 
       // New users are always normal users
-      Get.offAllNamed(AppRoutes.userHome);
+      Get.offAllNamed(AppRoutes.usernav);
     } catch (e) {
       final message = e is AuthException
           ? e.message
