@@ -45,11 +45,13 @@ class SplashController extends GetxController {
         _navigateTo(AppRoutes.adminHome);
       } else if (response['role'] == 'staff') {
         _navigateTo(AppRoutes.staffHome);
+      } else if (response['role'] == 'delivery') {
+        _navigateTo(AppRoutes.deliveryHome);
       } else {
         _navigateTo(AppRoutes.usernav);
       }
     } catch (e) {
-      print("Splash Error: $e");
+      Get.log("Splash Error: $e");
       // On error, fallback to login to be safe
       _navigateTo(AppRoutes.login);
     }

@@ -1,6 +1,8 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:ecom/features/admin/orders/controller/admin_order_controller.dart';
 import 'package:ecom/features/admin/users/ui/admin_users_screen.dart';
+import 'package:ecom/features/admin/orders/ui/admin_orders_screen.dart';
+import 'package:ecom/features/admin/products/ui/admin_product_list_screen.dart';
 import 'package:ecom/features/auth/controller/auth_controller.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +74,12 @@ class _AdminHomeState extends State<AdminHome> {
 
             const SizedBox(height: 24),
 
+            /// ⚙️ OPERATIONS CENTER (Orders & Inventory)
+            _sectionHeader("Operations Center"),
+            _buildOperationsGrid(),
+
+            const SizedBox(height: 24),
+
             /// 📈 FINANCIAL OVERSIGHT
             _sectionHeader("Financial Insights"),
             _buildFinanceCard(),
@@ -125,7 +133,7 @@ class _AdminHomeState extends State<AdminHome> {
               color: ColorConst.card,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: ColorConst.primary.withOpacity(0.3),
+                color: ColorConst.primary.withValues(alpha: 0.3),
                 width: 2,
               ),
               boxShadow: [
@@ -141,7 +149,7 @@ class _AdminHomeState extends State<AdminHome> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: ColorConst.primary.withOpacity(0.1),
+                    color: ColorConst.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -303,7 +311,7 @@ class _AdminHomeState extends State<AdminHome> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -395,6 +403,77 @@ class _AdminHomeState extends State<AdminHome> {
             Text(
               label,
               style: const TextStyle(color: ColorConst.textMuted, fontSize: 11),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOperationsGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: _opCard(
+              "Orders",
+              Icons.local_shipping_rounded,
+              Colors.blueAccent,
+              () => Get.to(() => AdminOrderScreen()),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _opCard(
+              "Inventory",
+              Icons.inventory_2_rounded,
+              Colors.purpleAccent,
+              () => Get.to(() => const AdminProductListScreen()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _opCard(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: ColorConst.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                color: ColorConst.textLight,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
           ],
         ),

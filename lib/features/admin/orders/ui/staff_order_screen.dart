@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-class AdminOrderScreen extends StatelessWidget {
-  AdminOrderScreen({super.key});
+/// Staff Order Screen - Staff can process orders but CANNOT cancel them
+class StaffOrderScreen extends StatelessWidget {
+  StaffOrderScreen({super.key});
 
   final controller = Get.put(AdminOrderController());
 
@@ -17,7 +18,7 @@ class AdminOrderScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'Orders & Fulfillment',
+          'Order Processing',
           style: TextStyle(
             color: ColorConst.textLight,
             fontWeight: FontWeight.bold,
@@ -51,7 +52,7 @@ class AdminOrderScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  "No orders found",
+                  "No orders to process",
                   style: TextStyle(color: ColorConst.textMuted),
                 ),
               ],
@@ -61,10 +62,10 @@ class AdminOrderScreen extends StatelessWidget {
 
         return Column(
           children: [
-            /// 🏷️ STATUS FILTERS
+            // Status Filters
             _buildStatusFilters(),
 
-            /// 📦 ORDER LIST
+            // Order List
             Expanded(
               child: RefreshIndicator(
                 onRefresh: controller.fetchAllOrders,
@@ -86,7 +87,6 @@ class AdminOrderScreen extends StatelessWidget {
   }
 
   Widget _buildStatusFilters() {
-    // Current controller doesn't have filtering logic, but we can add UI placeholders
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -95,8 +95,8 @@ class AdminOrderScreen extends StatelessWidget {
         children: [
           _filterChip("All Orders", true),
           _filterChip("Pending", false),
-          _filterChip("Success", false),
-          _filterChip("Cancelled", false),
+          _filterChip("Processing", false),
+          _filterChip("Ready", false),
         ],
       ),
     );
@@ -184,7 +184,7 @@ class AdminOrderScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      order.userName ?? 'Anonymous User',
+                      order.userName ?? 'Customer',
                       style: const TextStyle(
                         color: ColorConst.textLight,
                         fontWeight: FontWeight.bold,
@@ -231,34 +231,10 @@ class AdminOrderScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (order.managerName != null) ...[
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.verified_user_rounded,
-                        size: 14,
-                        color: Colors.greenAccent,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Handled by: ${order.managerName}",
-                        style: const TextStyle(
-                          color: Colors.greenAccent,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-
-                // Delivery Info
-                const SizedBox(height: 12),
-                _buildDeliveryInfo(order),
               ],
             ),
           ),
+          // ACTION BUTTONS - Staff can only mark as PENDING or SUCCESS (No Cancel!)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -278,16 +254,17 @@ class AdminOrderScreen extends StatelessWidget {
                 ),
                 _actionButton(
                   order.id,
+                  'PROCESSING',
+                  Colors.blue,
+                  Icons.sync_rounded,
+                ),
+                _actionButton(
+                  order.id,
                   'SUCCESS',
                   Colors.greenAccent,
                   Icons.check_circle_rounded,
                 ),
-                _actionButton(
-                  order.id,
-                  'CANCELLED',
-                  Colors.redAccent,
-                  Icons.cancel_rounded,
-                ),
+                // NO CANCEL BUTTON FOR STAFF!
               ],
             ),
           ),
@@ -311,7 +288,7 @@ class AdminOrderScreen extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 11,
               ),
             ),
           ],
@@ -325,6 +302,9 @@ class AdminOrderScreen extends StatelessWidget {
     switch (status.toUpperCase()) {
       case 'SUCCESS':
         color = Colors.greenAccent;
+        break;
+      case 'PROCESSING':
+        color = Colors.blue;
         break;
       case 'CANCELLED':
         color = Colors.redAccent;
@@ -349,161 +329,6 @@ class AdminOrderScreen extends StatelessWidget {
           letterSpacing: 0.5,
         ),
       ),
-    );
-  }
-
-  Widget _buildDeliveryInfo(order) {
-    final bool isAssigned = order.deliveryPersonId != null;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.delivery_dining_rounded,
-              size: 16,
-              color: isAssigned ? Colors.blueAccent : ColorConst.textMuted,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              isAssigned ? "Assigned" : "Not Assigned",
-              style: TextStyle(
-                color: isAssigned ? Colors.blueAccent : ColorConst.textMuted,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        TextButton(
-          onPressed: () => _showAssignDeliveryDialog(order.id),
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 0),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(
-            isAssigned ? "Change" : "Assign Now",
-            style: const TextStyle(
-              color: ColorConst.primary,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showAssignDeliveryDialog(String orderId) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: ColorConst.card,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Assign Delivery Person",
-              style: TextStyle(
-                color: ColorConst.textLight,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Select a delivery partner for this order",
-              style: TextStyle(color: ColorConst.textMuted, fontSize: 13),
-            ),
-            const SizedBox(height: 24),
-            Obx(() {
-              if (controller.deliveryPersonnel.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text("No delivery personnel found"),
-                  ),
-                );
-              }
-              return Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: controller.deliveryPersonnel.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final person = controller.deliveryPersonnel[index];
-                    return InkWell(
-                      onTap: () {
-                        controller.assignDeliveryPerson(orderId, person['id']);
-                        Get.back();
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: ColorConst.bg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: ColorConst.surface),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: ColorConst.primary.withValues(
-                                alpha: 0.1,
-                              ),
-                              child: Text(
-                                person['full_name'][0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: ColorConst.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    person['full_name'],
-                                    style: const TextStyle(
-                                      color: ColorConst.textLight,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    person['email'] ?? '',
-                                    style: const TextStyle(
-                                      color: ColorConst.textMuted,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(
-                              Icons.arrow_forward_ios_rounded,
-                              size: 14,
-                              color: ColorConst.textMuted,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            }),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
     );
   }
 }

@@ -257,7 +257,7 @@ class AdminAddProductPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: ColorConst.primary.withOpacity(0.3),
+                        color: ColorConst.primary.withValues(alpha: 0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -366,13 +366,15 @@ class AdminAddProductPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: disabled ? ColorConst.card.withOpacity(0.5) : ColorConst.card,
+        color: disabled
+            ? ColorConst.card.withValues(alpha: 0.5)
+            : ColorConst.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: ColorConst.surface, width: 1.5),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           dropdownColor: ColorConst.card,
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,

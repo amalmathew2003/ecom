@@ -1,8 +1,10 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
-import 'package:ecom/features/user/orders/controller/oder_controller.dart';
+import 'package:ecom/features/user/orders/controller/order_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/features/user/profile/controller/profile_controller.dart';
+import 'package:ecom/features/user/wishlist/controller/wishlist_controller.dart';
+import 'package:ecom/features/admin/products/controller/product_controller.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -51,6 +53,8 @@ class MyApp extends StatelessWidget {
         Get.put(ProfileController());
         Get.put(CheckoutController(), permanent: true);
         Get.put(OrderController(), permanent: true);
+        Get.put(WishlistController(), permanent: true);
+        Get.put(AdminProductController(), permanent: true);
       }),
     );
   }

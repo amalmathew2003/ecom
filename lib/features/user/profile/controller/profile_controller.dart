@@ -1,4 +1,5 @@
 import 'package:ecom/features/user/profile/data/profile_model.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -31,7 +32,47 @@ class ProfileController extends GetxController {
         profile.value = ProfileModel.fromJson(data);
       }
     } catch (e) {
-      print("Profile Fetch Error: $e");
+      Get.log("Profile Fetch Error: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateProfile({
+    String? name,
+    String? phone,
+    String? address,
+  }) async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      isLoading.value = true;
+
+      final updates = <String, dynamic>{};
+      if (name != null) updates['full_name'] = name;
+      if (phone != null) updates['phone'] = phone;
+      if (address != null) updates['address'] = address;
+
+      if (updates.isEmpty) return;
+
+      await supabase.from('profiles').update(updates).eq('id', user.id);
+      await fetchProfile(); // Refresh local data
+
+      Get.snackbar(
+        "Success",
+        "Profile updated successfully",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.log("Profile Update Error: $e");
+      Get.snackbar(
+        "Error",
+        "Failed to update profile",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }

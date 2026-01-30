@@ -21,7 +21,7 @@ class ProductCarousel extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: ColorConst.primary.withOpacity(0.3),
+                color: ColorConst.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -34,7 +34,7 @@ class ProductCarousel extends StatelessWidget {
                 top: -20,
                 child: CircleAvatar(
                   radius: 60,
-                  backgroundColor: Colors.white.withOpacity(0.1),
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
                 ),
               ),
               Padding(
@@ -49,7 +49,7 @@ class ProductCarousel extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
@@ -94,7 +94,7 @@ class ProductCarousel extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -112,7 +112,7 @@ class ProductCarousel extends StatelessWidget {
                         begin: Alignment.bottomCenter,
                         end: Alignment.center,
                         colors: [
-                          Colors.black.withOpacity(0.8),
+                          Colors.black.withValues(alpha: 0.8),
                           Colors.transparent,
                         ],
                       ),

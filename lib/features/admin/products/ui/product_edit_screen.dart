@@ -258,7 +258,7 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: ColorConst.primary.withOpacity(0.3),
+                          color: ColorConst.primary.withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -346,10 +346,10 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
         decoration: BoxDecoration(
           color: ColorConst.card,
           shape: BoxShape.circle,
-          border: Border.all(color: color.withOpacity(0.5), width: 1.5),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),

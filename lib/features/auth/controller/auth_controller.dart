@@ -32,6 +32,8 @@ class AuthController extends GetxController {
         Get.offAllNamed(AppRoutes.adminHome);
       } else if (profile?['role'] == 'staff') {
         Get.offAllNamed(AppRoutes.staffHome);
+      } else if (profile?['role'] == 'delivery') {
+        Get.offAllNamed(AppRoutes.deliveryHome);
       } else {
         Get.offAllNamed(AppRoutes.usernav);
       }

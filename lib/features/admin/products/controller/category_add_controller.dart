@@ -21,7 +21,7 @@ class AdminCategoryController extends GetxController {
           .order('created_at');
       categories.value = List<Map<String, dynamic>>.from(res);
     } catch (e) {
-      print("Error fetching categories: $e");
+      Get.log("Error fetching categories: $e");
     }
   }
 

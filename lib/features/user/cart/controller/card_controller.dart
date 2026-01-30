@@ -22,10 +22,9 @@ class CartController extends GetxController {
       );
       cartItems.refresh();
     } catch (e) {
-      print("Fetch Error: $e");
+      Get.log("Fetch Error: $e");
     }
   }
-
 
   /// ================= ADD TO CART =================
   Future<void> addToCart({

@@ -95,10 +95,10 @@ class _CartScreenState extends State<CartScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: ColorConst.primary.withOpacity(0.12),
+                      color: ColorConst.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(
-                        color: ColorConst.primary.withOpacity(0.2),
+                        color: ColorConst.primary.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Text(
@@ -120,7 +120,7 @@ class _CartScreenState extends State<CartScreen> {
             child: Text(
               "Check your items and proceed to payment",
               style: TextStyle(
-                color: ColorConst.textMuted.withOpacity(0.7),
+                color: ColorConst.textMuted.withValues(alpha: 0.7),
                 fontSize: 14,
               ),
             ),
@@ -138,12 +138,12 @@ class _CartScreenState extends State<CartScreen> {
         color: ColorConst.card,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: ColorConst.surface.withOpacity(0.4),
+          color: ColorConst.surface.withValues(alpha: 0.4),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -182,7 +182,7 @@ class _CartScreenState extends State<CartScreen> {
                             borderRadius: BorderRadius.circular(20),
                             gradient: LinearGradient(
                               colors: [
-                                Colors.black.withOpacity(0.2),
+                                Colors.black.withValues(alpha: 0.2),
                                 Colors.transparent,
                               ],
                               begin: Alignment.bottomCenter,
@@ -219,7 +219,7 @@ class _CartScreenState extends State<CartScreen> {
                               onTap: () => cartCtrl.deleteItem(item.id),
                               child: Icon(
                                 Icons.remove_circle_outline_rounded,
-                                color: ColorConst.danger.withOpacity(0.7),
+                                color: ColorConst.danger.withValues(alpha: 0.7),
                                 size: 20,
                               ),
                             ),
@@ -229,7 +229,7 @@ class _CartScreenState extends State<CartScreen> {
                         Text(
                           "Price per unit: ₹${product.price}",
                           style: TextStyle(
-                            color: ColorConst.textMuted.withOpacity(0.6),
+                            color: ColorConst.textMuted.withValues(alpha: 0.6),
                             fontSize: 12,
                           ),
                         ),
@@ -273,7 +273,7 @@ class _CartScreenState extends State<CartScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: ColorConst.primary.withOpacity(0.1),
+                    color: ColorConst.primary.withValues(alpha: 0.1),
                     blurRadius: 30,
                     spreadRadius: 10,
                   ),
@@ -281,7 +281,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
               child: Icon(
                 Icons.shopping_cart_outlined,
-                color: ColorConst.textMuted.withOpacity(0.3),
+                color: ColorConst.textMuted.withValues(alpha: 0.3),
                 size: 80,
               ),
             ),
@@ -303,7 +303,7 @@ class _CartScreenState extends State<CartScreen> {
                   "Add some products to your bag\nand they will appear here",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: ColorConst.textMuted.withOpacity(0.7),
+                    color: ColorConst.textMuted.withValues(alpha: 0.7),
                     fontSize: 14,
                   ),
                 ),
@@ -340,12 +340,12 @@ class _CartScreenState extends State<CartScreen> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 40,
               offset: const Offset(0, -10),
             ),
           ],
-          border: Border.all(color: ColorConst.surface.withOpacity(0.5)),
+          border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -393,7 +393,7 @@ class _CartScreenState extends State<CartScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ColorConst.primary.withOpacity(0.3),
+            color: ColorConst.primary.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -402,7 +402,7 @@ class _CartScreenState extends State<CartScreen> {
       child: ElevatedButton(
         onPressed: () {
           final checkoutCtrl = Get.find<CheckoutController>();
-          checkoutCtrl.setCartChekout();
+          checkoutCtrl.setCartCheckout();
           Get.to(() => const CheckoutScreen());
         },
         style: ElevatedButton.styleFrom(
@@ -428,7 +428,7 @@ class _CartScreenState extends State<CartScreen> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: ColorConst.surface.withOpacity(0.4),
+        color: ColorConst.surface.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

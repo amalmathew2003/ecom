@@ -278,13 +278,14 @@ class UserHome extends StatelessWidget {
         SizedBox(
           height: 280,
           child: Obx(() {
-            if (productCtrl.recommendedProducts.isEmpty)
+            if (productCtrl.recommendedProducts.isEmpty) {
               return const Center(
                 child: Text(
                   "Curating best picks...",
                   style: TextStyle(color: ColorConst.textMuted),
                 ),
               );
+            }
             return ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,

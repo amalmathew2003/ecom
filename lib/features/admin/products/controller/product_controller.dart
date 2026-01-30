@@ -24,9 +24,8 @@ class AdminProductController extends GetxController {
         (response as List).map((e) => ProductModel.fromJson(e)).toList(),
       );
     } catch (e) {
-Future.microtask(() {
-    Get.snackbar('Error', e.toString());
-  });    } finally {
+      Get.snackbar('Error', e.toString());
+    } finally {
       isLoading.value = false;
     }
   }
@@ -81,11 +80,8 @@ Future.microtask(() {
       await fetchProducts();
       Get.snackbar('Success', 'Product added successfully');
     } catch (e) {
-Future.microtask(() {
-Future.microtask(() {
-Future.microtask(() {
-    Get.snackbar('Error', e.toString());
-  });  });  });    } finally {
+      Get.snackbar('Error', e.toString());
+    } finally {
       isLoading.value = false;
     }
   }

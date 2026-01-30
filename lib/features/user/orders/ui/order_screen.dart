@@ -1,6 +1,6 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:ecom/features/user/orders/controller/oder_controller.dart';
-import 'package:ecom/features/user/orders/ui/oder_details_screen.dart';
+import 'package:ecom/features/user/orders/controller/order_controller.dart';
+import 'package:ecom/features/user/orders/ui/order_details_screen.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -73,7 +73,7 @@ class OrderScreen extends StatelessWidget {
           Icon(
             Icons.receipt_long_outlined,
             size: 80,
-            color: ColorConst.textMuted.withOpacity(0.2),
+            color: ColorConst.textMuted.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -99,10 +99,10 @@ class OrderScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: ColorConst.card,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: ColorConst.surface.withOpacity(0.5)),
+        border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -267,9 +267,9 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

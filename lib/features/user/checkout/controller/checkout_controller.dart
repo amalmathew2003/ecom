@@ -12,18 +12,18 @@ class CheckoutController extends GetxController {
 
   // BUY NOW DATA
   String? productId;
-  double? buyNowAomunt;
+  double? buyNowAmount;
 
-  void setCartChekout() {
+  void setCartCheckout() {
     mode.value = CheckoutMode.cart;
     productId = null;
-    buyNowAomunt = null;
+    buyNowAmount = null;
   }
 
   void setBuyNow({required String productId, required double amount}) {
     mode.value = CheckoutMode.buyNow;
     this.productId = productId;
-    buyNowAomunt = amount;
+    buyNowAmount = amount;
   }
 
   void selectPaymentMethod(PaymentMethod method) {
@@ -37,7 +37,7 @@ class CheckoutController extends GetxController {
     if (mode.value == CheckoutMode.cart) {
       return Get.find<CartController>().totalAmount;
     } else {
-      return buyNowAomunt ?? 0;
+      return buyNowAmount ?? 0;
     }
   }
 }

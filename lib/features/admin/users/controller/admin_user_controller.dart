@@ -113,10 +113,11 @@ class AdminUserController extends GetxController {
     }
   }
 
-  Future<void> registerStaffMember({
+  Future<void> registerTeamMember({
     required String email,
     required String password,
     required String name,
+    required String role, // 'staff', 'delivery', etc.
   }) async {
     try {
       isLoading.value = true;
@@ -126,20 +127,34 @@ class AdminUserController extends GetxController {
 
       if (res.user == null) throw Exception("Failed to create user account");
 
-      // 2. Create Profile with 'staff' role
+      // 2. Create Profile with specified role
       await supabase.from('profiles').upsert({
         'id': res.user!.id,
         'email': email,
         'full_name': name,
-        'role': 'staff',
+        'role': role,
       });
 
       await fetchUsers();
-      Get.snackbar('Success', 'Staff member registered successfully');
+      Get.snackbar('Success', '${role.toUpperCase()} registered successfully');
     } catch (e) {
       Get.snackbar('Registration Failed', e.toString());
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Legacy method for backward compatibility
+  Future<void> registerStaffMember({
+    required String email,
+    required String password,
+    required String name,
+  }) async {
+    await registerTeamMember(
+      email: email,
+      password: password,
+      name: name,
+      role: 'staff',
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:ecom/features/user/home/ui/product_details/product_details_screen.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
+import 'package:ecom/features/user/wishlist/controller/wishlist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -62,18 +63,32 @@ class ProductCard extends StatelessWidget {
                       Positioned(
                         top: 10,
                         right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.favorite_border,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
+                        child: Obx(() {
+                          final wishlistCtrl = Get.find<WishlistController>();
+                          final isFavorite = wishlistCtrl.isInWishlist(
+                            product.id,
+                          );
+                          return GestureDetector(
+                            onTap: () =>
+                                wishlistCtrl.toggleWishlist(product.id),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isFavorite
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border,
+                                color: isFavorite
+                                    ? Colors.redAccent
+                                    : Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          );
+                        }),
                       ),
                     ],
                   ),

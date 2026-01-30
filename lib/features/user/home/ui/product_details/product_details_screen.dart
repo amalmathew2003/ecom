@@ -9,6 +9,7 @@ import 'package:ecom/features/user/nav/controller/nav_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/shared/models/product_model.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
+import 'package:ecom/features/user/wishlist/controller/wishlist_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -70,7 +71,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         child: Center(
           child: Container(
             decoration: BoxDecoration(
-              color: ColorConst.bg.withOpacity(0.5),
+              color: ColorConst.bg.withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -85,10 +86,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
       ),
       actions: [
+        Obx(() {
+          final wishlistCtrl = Get.find<WishlistController>();
+          final isFavorite = wishlistCtrl.isInWishlist(widget.product.id);
+          return Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: ColorConst.bg.withValues(alpha: 0.5),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(
+                isFavorite
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: isFavorite ? Colors.redAccent : Colors.white,
+                size: 20,
+              ),
+              onPressed: () => wishlistCtrl.toggleWishlist(widget.product.id),
+            ),
+          );
+        }),
         Container(
           margin: const EdgeInsets.only(right: 20),
           decoration: BoxDecoration(
-            color: ColorConst.bg.withOpacity(0.5),
+            color: ColorConst.bg.withValues(alpha: 0.5),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -144,7 +166,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         borderRadius: BorderRadius.circular(4),
                         color: currentIndex == entry.key
                             ? ColorConst.primary
-                            : Colors.white.withOpacity(0.5),
+                            : Colors.white.withValues(alpha: 0.5),
                       ),
                     );
                   }).toList(),
@@ -300,7 +322,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       decoration: BoxDecoration(
         color:
             (isOut ? Colors.red : (isLow ? Colors.orange : ColorConst.primary))
-                .withOpacity(0.1),
+                .withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -346,8 +368,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
             const SizedBox(height: 16),
             Obx(() {
-              if (reviewCtrl.isLoading.value)
+              if (reviewCtrl.isLoading.value) {
                 return const Center(child: CircularProgressIndicator());
+              }
               if (reviewCtrl.reviews.isEmpty) {
                 return const Text(
                   "No reviews for this product yet.",
@@ -373,7 +396,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       decoration: BoxDecoration(
         color: ColorConst.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorConst.surface.withOpacity(0.5)),
+        border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,7 +405,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: ColorConst.primary.withOpacity(0.2),
+                backgroundColor: ColorConst.primary.withValues(alpha: 0.2),
                 child: Text(
                   (review['reviewer_email'] ?? "U")[0].toUpperCase(),
                   style: const TextStyle(
@@ -409,7 +432,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     size: 16,
                     color: i < (review['rating'] ?? 0)
                         ? Colors.amber
-                        : ColorConst.textMuted.withOpacity(0.3),
+                        : ColorConst.textMuted.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -432,7 +455,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         color: ColorConst.card,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, -10),
           ),
@@ -463,7 +486,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: inCart
                       ? ColorConst.surface
-                      : ColorConst.primary.withOpacity(0.15),
+                      : ColorConst.primary.withValues(alpha: 0.15),
                   foregroundColor: inCart
                       ? ColorConst.textLight
                       : ColorConst.primary,
@@ -488,7 +511,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorConst.primary.withOpacity(0.3),
+                    color: ColorConst.primary.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -558,7 +581,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       size: 36,
                       color: i < rating
                           ? Colors.amber
-                          : ColorConst.textMuted.withOpacity(0.3),
+                          : ColorConst.textMuted.withValues(alpha: 0.3),
                     ),
                   ),
                 ),

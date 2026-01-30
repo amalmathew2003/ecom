@@ -1,11 +1,13 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:ecom/features/user/orders/ui/oder_screen.dart';
+import 'package:ecom/features/user/orders/ui/order_screen.dart';
+import 'package:ecom/features/user/wishlist/ui/wishlist_screen.dart';
 import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/features/auth/controller/auth_controller.dart';
 import 'package:ecom/core/routes/app_routes.dart';
 import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ecom/features/user/profile/ui/edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -64,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                       title: "Wishlist",
                       subtitle: "Your favorite items saved",
                       color: Colors.pinkAccent,
-                      onTap: () {},
+                      onTap: () => Get.to(() => const WishlistScreen()),
                     ),
 
                     const SizedBox(height: 32),
@@ -88,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                           ? profile.address
                           : "Add your shipping address",
                       color: Colors.blueAccent,
-                      onTap: () {},
+                      onTap: () => Get.to(() => const EditProfileScreen()),
                     ),
                     _profileCard(
                       icon: Icons.security_rounded,
@@ -154,7 +156,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(50)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -186,16 +188,19 @@ class ProfileScreen extends StatelessWidget {
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: ColorConst.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.edit_rounded,
-                    color: Colors.white,
-                    size: 18,
+                child: GestureDetector(
+                  onTap: () => Get.to(() => const EditProfileScreen()),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: ColorConst.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.edit_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ),
               ),
@@ -214,7 +219,7 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: ColorConst.surface.withOpacity(0.5),
+              color: ColorConst.surface.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -243,7 +248,7 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: ColorConst.card,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: ColorConst.surface.withOpacity(0.6)),
+        border: Border.all(color: ColorConst.surface.withValues(alpha: 0.6)),
       ),
       child: ListTile(
         onTap: onTap,
@@ -251,7 +256,7 @@ class ProfileScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(icon, color: color, size: 24),

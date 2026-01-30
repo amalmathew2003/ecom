@@ -2,6 +2,7 @@ import 'package:ecom/features/admin/products/ui/admin_home.dart';
 import 'package:ecom/features/admin/products/ui/staff_dashboard.dart';
 import 'package:ecom/features/auth/ui/login_page.dart';
 import 'package:ecom/features/auth/ui/register_page.dart';
+import 'package:ecom/features/delivery/ui/delivery_dashboard.dart';
 import 'package:ecom/features/splash/controller/splash_controller.dart';
 import 'package:ecom/features/splash/ui/splash_screen.dart';
 import 'package:ecom/features/user/cart/ui/cart_screen.dart';
@@ -19,6 +20,7 @@ class AppRoutes {
   static const usercart = '/cart';
   static const adminHome = '/admin-home';
   static const staffHome = '/staff-home';
+  static const deliveryHome = '/delivery-home';
 
   static final pages = [
     /// 🔹 Splash
@@ -56,5 +58,8 @@ class AppRoutes {
 
     /// 🔹 Staff Portal
     GetPage(name: staffHome, page: () => const StaffDashboard()),
+
+    /// 🔹 Delivery Portal
+    GetPage(name: deliveryHome, page: () => const DeliveryDashboard()),
   ];
 }

@@ -40,7 +40,7 @@ class ProductController extends GetxController {
           .map((e) => ProductModel.fromJson(e))
           .toList();
     } catch (e) {
-      print("Search Error: $e");
+      Get.log("Search Error: $e");
     } finally {
       isLoading.value = false;
       isSearching.value = false;
@@ -60,7 +60,7 @@ class ProductController extends GetxController {
         (response as List).map((e) => ProductModel.fromJson(e)).toList(),
       );
     } catch (e) {
-      print("Recommendations error: $e");
+      Get.log("Recommendations error: $e");
     }
   }
 
@@ -79,7 +79,7 @@ class ProductController extends GetxController {
 
       return (response as List).map((e) => ProductModel.fromJson(e)).toList();
     } catch (e) {
-      print("Related products error: $e");
+      Get.log("Related products error: $e");
       return [];
     }
   }
@@ -119,7 +119,7 @@ class ProductController extends GetxController {
           .map((e) => ProductModel.fromJson(e))
           .toList();
     } catch (e) {
-      print("Arrivals error: $e");
+      Get.log("Arrivals error: $e");
     }
   }
 
@@ -138,7 +138,7 @@ class ProductController extends GetxController {
           .map((e) => ProductModel.fromJson(e))
           .toList();
     } catch (e) {
-      print("SubCat error: $e");
+      Get.log("SubCat error: $e");
     } finally {
       isLoading.value = false;
     }

@@ -32,7 +32,7 @@ class LoginPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      ColorConst.primary.withOpacity(0.3),
+                      ColorConst.primary.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                   ),
@@ -52,7 +52,7 @@ class LoginPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      ColorConst.accent.withOpacity(0.2),
+                      ColorConst.accent.withValues(alpha: 0.2),
                       Colors.transparent,
                     ],
                   ),
@@ -77,10 +77,12 @@ class LoginPage extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: ColorConst.primary.withOpacity(0.1),
+                              color: ColorConst.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: ColorConst.primary.withOpacity(0.2),
+                                color: ColorConst.primary.withValues(
+                                  alpha: 0.2,
+                                ),
                                 width: 2,
                               ),
                             ),
@@ -129,7 +131,7 @@ class LoginPage extends StatelessWidget {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
+                              color: Colors.black.withValues(alpha: 0.3),
                               blurRadius: 30,
                               offset: const Offset(0, 15),
                             ),
@@ -284,7 +286,7 @@ class LoginPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: ColorConst.primary.withOpacity(0.3),
+              color: ColorConst.primary.withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),

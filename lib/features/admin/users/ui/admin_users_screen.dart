@@ -121,7 +121,9 @@ class AdminUserScreen extends StatelessWidget {
                               Icon(
                                 Icons.group_off_rounded,
                                 size: 64,
-                                color: ColorConst.textMuted.withOpacity(0.2),
+                                color: ColorConst.textMuted.withValues(
+                                  alpha: 0.2,
+                                ),
                               ),
                               const SizedBox(height: 16),
                               const Text(
@@ -186,7 +188,9 @@ class AdminUserScreen extends StatelessWidget {
         children: [
           _filterChip("All", 'all'),
           const SizedBox(width: 8),
-          _filterChip("Staff Only", 'staff'),
+          _filterChip("Staff", 'staff'),
+          const SizedBox(width: 8),
+          _filterChip("Delivery", 'delivery'),
           const SizedBox(width: 8),
           _filterChip("Customers", 'user'),
         ],
@@ -226,9 +230,9 @@ class AdminUserScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
@@ -279,7 +283,7 @@ class AdminUserScreen extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: roleColor.withOpacity(0.1),
+                backgroundColor: roleColor.withValues(alpha: 0.1),
                 child: Icon(roleIcon, color: roleColor, size: 20),
               ),
               const SizedBox(width: 12),
@@ -362,21 +366,26 @@ class AdminUserScreen extends StatelessWidget {
   Widget _roleDropdown(user) {
     // Safety check: ensure current role is valid for dropdown, default to 'user' if not.
     final currentRole =
-        ['user', 'staff', 'admin'].contains(user.role.toLowerCase().trim())
+        [
+          'user',
+          'staff',
+          'delivery',
+          'admin',
+        ].contains(user.role.toLowerCase().trim())
         ? user.role.toLowerCase().trim()
         : 'user';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: ColorConst.surface.withOpacity(0.3),
+        color: ColorConst.surface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(10),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           dropdownColor: ColorConst.card,
           value: currentRole,
-          items: ['user', 'staff', 'admin'].map((role) {
+          items: ['user', 'staff', 'delivery', 'admin'].map((role) {
             return DropdownMenuItem(
               value: role,
               child: Text(
@@ -403,6 +412,7 @@ class AdminUserScreen extends StatelessWidget {
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController();
     final nameCtrl = TextEditingController();
+    final selectedRole = 'staff'.obs;
 
     showDialog(
       context: context,
@@ -410,12 +420,71 @@ class AdminUserScreen extends StatelessWidget {
         backgroundColor: ColorConst.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
-          "Register New Staff",
+          "Register Team Member",
           style: TextStyle(color: ColorConst.textLight),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Role Selector
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => selectedRole.value = 'staff',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: selectedRole.value == 'staff'
+                              ? ColorConst.primary
+                              : ColorConst.bg,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '🛠️ Staff',
+                            style: TextStyle(
+                              color: selectedRole.value == 'staff'
+                                  ? Colors.white
+                                  : ColorConst.textMuted,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => selectedRole.value = 'delivery',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: selectedRole.value == 'delivery'
+                              ? Colors.blue
+                              : ColorConst.bg,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '🚚 Delivery',
+                            style: TextStyle(
+                              color: selectedRole.value == 'delivery'
+                                  ? Colors.white
+                                  : ColorConst.textMuted,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             _dialogField(emailCtrl, "Email", Icons.email_rounded),
             const SizedBox(height: 12),
             _dialogField(nameCtrl, "Full Name", Icons.person_rounded),
@@ -430,23 +499,28 @@ class AdminUserScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              if (emailCtrl.text.isNotEmpty &&
-                  passwordCtrl.text.isNotEmpty &&
-                  nameCtrl.text.isNotEmpty) {
-                controller.registerStaffMember(
-                  email: emailCtrl.text.trim(),
-                  password: passwordCtrl.text.trim(),
-                  name: nameCtrl.text.trim(),
-                );
-                Get.back();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColorConst.primary,
+          Obx(
+            () => ElevatedButton(
+              onPressed: () {
+                if (emailCtrl.text.isNotEmpty &&
+                    passwordCtrl.text.isNotEmpty &&
+                    nameCtrl.text.isNotEmpty) {
+                  controller.registerTeamMember(
+                    email: emailCtrl.text.trim(),
+                    password: passwordCtrl.text.trim(),
+                    name: nameCtrl.text.trim(),
+                    role: selectedRole.value,
+                  );
+                  Get.back();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedRole.value == 'delivery'
+                    ? Colors.blue
+                    : ColorConst.primary,
+              ),
+              child: Text("Register ${selectedRole.value.toUpperCase()}"),
             ),
-            child: const Text("Register Staff"),
           ),
         ],
       ),

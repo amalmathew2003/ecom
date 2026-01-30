@@ -37,15 +37,15 @@ class UserRootPage extends StatelessWidget {
           child: Container(
             height: 70,
             decoration: BoxDecoration(
-              color: ColorConst.card.withOpacity(0.9),
+              color: ColorConst.card.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(25),
               border: Border.all(
-                color: ColorConst.surface.withOpacity(0.5),
+                color: ColorConst.surface.withValues(alpha: 0.5),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -80,7 +80,7 @@ class UserRootPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? ColorConst.primary.withOpacity(0.1)
+              ? ColorConst.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(15),
         ),

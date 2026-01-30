@@ -1,7 +1,8 @@
 import 'package:ecom/features/admin/orders/controller/admin_order_controller.dart';
-import 'package:ecom/features/admin/orders/ui/admin_orders_screen.dart';
+import 'package:ecom/features/admin/orders/ui/staff_order_screen.dart';
 import 'package:ecom/features/admin/products/controller/product_controller.dart';
 import 'package:ecom/features/admin/products/ui/add_product_screen.dart';
+import 'package:ecom/features/admin/products/ui/admin_product_list_screen.dart';
 import 'package:ecom/features/admin/products/ui/category_add_screen.dart';
 import 'package:ecom/features/admin/products/ui/product_edit_screen.dart';
 import 'package:ecom/features/auth/controller/auth_controller.dart';
@@ -88,7 +89,8 @@ class StaffDashboard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 20, bottom: 12),
                   child: TextButton(
-                    onPressed: () {}, // Could link to a full inventory list
+                    onPressed: () =>
+                        Get.to(() => const AdminProductListScreen()),
                     child: const Text(
                       "View All",
                       style: TextStyle(color: ColorConst.primary, fontSize: 12),
@@ -174,20 +176,23 @@ class StaffDashboard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: InkWell(
-        onTap: () => Get.to(() => AdminOrderScreen()),
+        onTap: () => Get.to(() => StaffOrderScreen()),
         borderRadius: BorderRadius.circular(24),
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [ColorConst.primary, ColorConst.primary.withOpacity(0.7)],
+              colors: [
+                ColorConst.primary,
+                ColorConst.primary.withValues(alpha: 0.7),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: ColorConst.primary.withOpacity(0.3),
+                color: ColorConst.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -198,7 +203,7 @@ class StaffDashboard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -345,7 +350,7 @@ class StaffDashboard extends StatelessWidget {
         decoration: BoxDecoration(
           color: ColorConst.card,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
         ),
         child: Column(
           children: [
@@ -394,7 +399,7 @@ class StaffDashboard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 28),

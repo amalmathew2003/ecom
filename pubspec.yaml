@@ -47,6 +47,7 @@ dependencies:
 
   
 
+  url_launcher: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

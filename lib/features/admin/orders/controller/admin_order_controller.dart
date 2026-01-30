@@ -1,4 +1,4 @@
-import 'package:ecom/features/user/orders/data/oder_model.dart';
+import 'package:ecom/features/user/orders/data/order_model.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,6 +13,7 @@ class AdminOrderController extends GetxController {
   void onInit() {
     super.onInit();
     fetchAllOrders();
+    fetchDeliveryPersonnel();
   }
 
   Future<void> fetchAllOrders() async {
@@ -23,13 +24,13 @@ class AdminOrderController extends GetxController {
         final response = await supabase
             .from('orders')
             .select(
-              '*, profiles(full_name, email), manager:managed_by(full_name)',
+              '*, customer:profiles!user_id(full_name, email), manager:profiles!managed_by(full_name), order_items(*, products(*))',
             )
             .order('created_at', ascending: false);
 
         _processOrders(response as List);
       } catch (e) {
-        print("Complex fetch failed, trying simple fetch: $e");
+        Get.log("Complex fetch failed, trying simple fetch: $e");
 
         // 2. Fallback: Try fetching without relationships (in case DB schema isn't fully set up)
         final simpleResponse = await supabase
@@ -40,7 +41,7 @@ class AdminOrderController extends GetxController {
         _processOrders(simpleResponse as List);
       }
     } catch (e) {
-      print("CRITICAL: Error fetching orders: $e");
+      Get.log("CRITICAL: Error fetching orders: $e");
       Get.snackbar(
         'Connection Error',
         'Please check your internet and Supabase tables.',
@@ -88,6 +89,43 @@ class AdminOrderController extends GetxController {
       } catch (e2) {
         Get.snackbar('Error', 'Failed to update order status: $e2');
       }
+    }
+  }
+
+  // ============= DELIVERY MANAGEMENT =============
+
+  final deliveryPersonnel = <Map<String, dynamic>>[].obs;
+
+  Future<void> fetchDeliveryPersonnel() async {
+    try {
+      final response = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .eq('role', 'delivery');
+
+      deliveryPersonnel.assignAll(List<Map<String, dynamic>>.from(response));
+    } catch (e) {
+      Get.log('Error fetching delivery personnel: $e');
+    }
+  }
+
+  Future<void> assignDeliveryPerson(
+    String orderId,
+    String deliveryPersonId,
+  ) async {
+    try {
+      await supabase
+          .from('orders')
+          .update({
+            'delivery_person': deliveryPersonId,
+            'delivery_status': 'assigned',
+          })
+          .eq('id', orderId);
+
+      await fetchAllOrders();
+      Get.snackbar('Success', 'Delivery person assigned successfully');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to assign delivery person: $e');
     }
   }
 }

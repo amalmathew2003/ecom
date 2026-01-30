@@ -16,7 +16,7 @@ class AdminSubCategoryController extends GetxController {
           .order('created_at');
       subCategories.value = List<Map<String, dynamic>>.from(res);
     } catch (e) {
-      print("Error fetching sub-categories: $e");
+      Get.log("Error fetching sub-categories: $e");
     }
   }
 

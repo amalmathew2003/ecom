@@ -1,5 +1,5 @@
 import 'package:ecom/features/user/cart/controller/card_controller.dart';
-import 'package:ecom/features/user/orders/controller/oder_controller.dart';
+import 'package:ecom/features/user/orders/controller/order_controller.dart';
 import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_mode.dart';
@@ -9,6 +9,7 @@ import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ecom/features/user/nav/controller/nav_controller.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -61,11 +62,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         snackPosition: SnackPosition.TOP,
       );
     } catch (e) {
-      print("Transaction Error: $e");
+      Get.log("Transaction Error: $e");
       Get.defaultDialog(
         title: "Order Error",
         middleText:
-            "Payment was successful but we couldn't record your order. Please contact support with Payment ID: $paymentId",
+            "Payment was successful but we couldn't record your order.\n\nError: $e\n\nPlease contact support with Payment ID: $paymentId",
         textConfirm: "OK",
         onConfirm: () => Get.back(),
       );
@@ -103,6 +104,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Verify Address and Phone
+    final profile = profileCrl.profile.value;
+    if (profile == null ||
+        profile.address.trim().isEmpty ||
+        profile.phone.trim().isEmpty) {
+      Get.snackbar(
+        "Missing Information",
+        "Please update your shipping address and phone number in your profile before placing an order.",
+        backgroundColor: Colors.orangeAccent,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        mainButton: TextButton(
+          onPressed: () {
+            Get.offNamed('/user-nav');
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (Get.isRegistered<UserNavController>()) {
+                Get.find<UserNavController>().changeTab(2);
+              }
+            });
+          },
+          child: const Text(
+            "Update Profile",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+      return;
+    }
+
     if (checkoutCrl.isCod) {
       await _placeCodOrder();
       return;
@@ -125,17 +155,51 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       isLoading.value = true;
       final uid = Supabase.instance.client.auth.currentUser!.id;
 
-      await Supabase.instance.client.from('orders').insert({
-        'user_id': uid,
-        'amount': checkoutCrl.payableAmount,
-        'payment_method': 'COD',
-        'payment_status': 'PENDING',
-        'order_type': checkoutCrl.mode.value == CheckoutMode.cart
-            ? 'CART'
-            : 'BUY_NOW',
-        if (checkoutCrl.mode.value == CheckoutMode.buyNow)
+      final profile = profileCrl.profile.value;
+
+      final orderResponse = await Supabase.instance.client
+          .from('orders')
+          .insert({
+            'user_id': uid,
+            'amount': checkoutCrl.payableAmount,
+            'payment_method': 'COD',
+            'payment_status': 'PENDING',
+            'order_type': checkoutCrl.mode.value == CheckoutMode.cart
+                ? 'CART'
+                : 'BUY_NOW',
+            'shipping_address': profile?.address ?? '',
+            'customer_phone': profile?.phone ?? '',
+            if (checkoutCrl.mode.value == CheckoutMode.buyNow)
+              'product_id': checkoutCrl.productId,
+          })
+          .select('id')
+          .single();
+
+      final String orderId = orderResponse['id'].toString();
+
+      // Save individual items to order_items
+      if (checkoutCrl.mode.value == CheckoutMode.cart) {
+        final items = cartCrl.cartItems
+            .map(
+              (item) => {
+                'order_id': orderId,
+                'product_id': item.product.id,
+                'quantity': item.quantity,
+                'price': item.product.price,
+              },
+            )
+            .toList();
+        await Supabase.instance.client.from('order_items').insert(items);
+      } else {
+        // Buy Now logic: we need to find the product price
+        // (Assuming we have access to the product or just use buyNowAmount)
+        await Supabase.instance.client.from('order_items').insert({
+          'order_id': orderId,
           'product_id': checkoutCrl.productId,
-      });
+          'quantity': 1,
+          'price': checkoutCrl.buyNowAmount ?? 0,
+        });
+      }
 
       if (checkoutCrl.mode.value == CheckoutMode.cart) {
         await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
@@ -165,14 +229,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _placeCartOrder(String paymentId) async {
     final uid = Supabase.instance.client.auth.currentUser!.id;
 
-    await Supabase.instance.client.from('orders').insert({
-      'user_id': uid,
-      'amount': cartCrl.totalAmount,
-      'payment_id': paymentId,
-      'payment_method': 'RAZORPAY',
-      'payment_status': 'SUCCESS',
-      'order_type': 'CART',
-    });
+    final profile = profileCrl.profile.value;
+
+    final orderResponse = await Supabase.instance.client
+        .from('orders')
+        .insert({
+          'user_id': uid,
+          'amount': cartCrl.totalAmount,
+          'payment_id': paymentId,
+          'payment_method': 'RAZORPAY',
+          'payment_status': 'SUCCESS',
+          'order_type': 'CART',
+          'shipping_address': profile?.address ?? '',
+          'customer_phone': profile?.phone ?? '',
+        })
+        .select('id')
+        .single();
+
+    final String orderId = orderResponse['id'].toString();
+
+    // Save individual items
+    final items = cartCrl.cartItems
+        .map(
+          (item) => {
+            'order_id': orderId,
+            'product_id': item.product.id,
+            'quantity': item.quantity,
+            'price': item.product.price,
+          },
+        )
+        .toList();
+    await Supabase.instance.client.from('order_items').insert(items);
 
     await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
     cartCrl.cartItems.clear();
@@ -181,14 +268,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _placeBuyNowOrder(String paymentId) async {
     final uid = Supabase.instance.client.auth.currentUser!.id;
 
-    await Supabase.instance.client.from('orders').insert({
-      'user_id': uid,
+    final profile = profileCrl.profile.value;
+
+    final orderResponse = await Supabase.instance.client
+        .from('orders')
+        .insert({
+          'user_id': uid,
+          'product_id': checkoutCrl.productId,
+          'amount': checkoutCrl.buyNowAmount,
+          'payment_id': paymentId,
+          'payment_method': 'RAZORPAY',
+          'payment_status': 'SUCCESS',
+          'order_type': 'BUY_NOW',
+          'shipping_address': profile?.address ?? '',
+          'customer_phone': profile?.phone ?? '',
+        })
+        .select('id')
+        .single();
+
+    final String orderId = orderResponse['id'].toString();
+
+    await Supabase.instance.client.from('order_items').insert({
+      'order_id': orderId,
       'product_id': checkoutCrl.productId,
-      'amount': checkoutCrl.buyNowAomunt,
-      'payment_id': paymentId,
-      'payment_method': 'RAZORPAY',
-      'payment_status': 'SUCCESS',
-      'order_type': 'BUY_NOW',
+      'quantity': 1,
+      'price': checkoutCrl.buyNowAmount ?? 0,
     });
 
     await Supabase.instance.client
@@ -230,6 +334,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Column(
               children: [
                 _summaryCard(),
+                const SizedBox(height: 16),
+                _shippingSection(),
                 const SizedBox(height: 24),
                 const PaymentMethodSelector(),
                 const Spacer(),
@@ -260,10 +366,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         decoration: BoxDecoration(
           color: ColorConst.card,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: ColorConst.surface.withOpacity(0.5)),
+          border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -294,6 +400,100 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
   }
 
+  Widget _shippingSection() {
+    return Obx(() {
+      final profile = profileCrl.profile.value;
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: ColorConst.card,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Shipping To",
+                  style: TextStyle(
+                    color: ColorConst.textLight,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Get.offNamed('/user-nav');
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      if (Get.isRegistered<UserNavController>()) {
+                        Get.find<UserNavController>().changeTab(2);
+                      }
+                    });
+                  },
+                  child: const Text(
+                    "Edit",
+                    style: TextStyle(
+                      color: ColorConst.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on_rounded,
+                  color: ColorConst.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    profile?.address.isNotEmpty == true
+                        ? profile!.address
+                        : "No address set. Please update in profile.",
+                    style: TextStyle(
+                      color: profile?.address.isNotEmpty == true
+                          ? ColorConst.textLight
+                          : Colors.redAccent,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(
+                  Icons.phone_rounded,
+                  color: ColorConst.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  profile?.phone.isNotEmpty == true
+                      ? profile!.phone
+                      : "No phone number",
+                  style: const TextStyle(
+                    color: ColorConst.textLight,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
   Widget _payButton() {
     return SizedBox(
       width: double.infinity,
@@ -304,7 +504,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: ColorConst.primary.withOpacity(0.3),
+              color: ColorConst.primary.withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
