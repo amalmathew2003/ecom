@@ -81,6 +81,9 @@ class OrderTrackingTimeline extends StatelessWidget {
   }
 
   List<_Step> _stepsForStatus(String status, String deliveryStatus) {
+    status = status.toUpperCase();
+    deliveryStatus = deliveryStatus.toLowerCase();
+
     List<_Step> steps = [_Step("Order Placed", true)];
 
     if (status == "CANCELLED") {
@@ -88,38 +91,35 @@ class OrderTrackingTimeline extends StatelessWidget {
       return steps;
     }
 
-    // Payment step
-    steps.add(
-      _Step(
-        "Payment Successful",
-        status == "SUCCESS" || status == "PROCESSING",
-      ),
-    );
+    // Payment step (Online payment goes to SUCCESS immediately, but for the timeline we check if it started)
+    bool isPaid =
+        status == "SUCCESS" ||
+        status == "OUT_FOR_DELIVERY" ||
+        status == "DELIVERED";
+    steps.add(_Step("Payment Successful", isPaid));
 
     // Handling / Processing step
-    bool isProcessing = status == "PROCESSING" || deliveryStatus != 'pending';
+    bool isProcessing =
+        isPaid || status == "PROCESSING" || deliveryStatus != 'pending';
     steps.add(_Step("Order Processing", isProcessing));
 
     // Delivery steps
-    bool isAssigned =
-        deliveryStatus == 'assigned' ||
-        deliveryStatus == 'picked_up' ||
+    bool isOutForDelivery =
+        status == "OUT_FOR_DELIVERY" ||
+        status == "DELIVERED" ||
+        status == "SUCCESS" ||
         deliveryStatus == 'in_transit' ||
+        deliveryStatus == 'picked_up';
+    steps.add(_Step("Out for Delivery", isOutForDelivery));
+
+    bool isDelivered =
+        status == "DELIVERED" ||
+        status == "SUCCESS" ||
         deliveryStatus == 'delivered';
-    steps.add(_Step("Handed over to Delivery", isAssigned));
+    steps.add(_Step("Delivered", isDelivered));
 
-    bool isPickedUp =
-        deliveryStatus == 'picked_up' ||
-        deliveryStatus == 'in_transit' ||
-        deliveryStatus == 'delivered';
-    steps.add(_Step("Picked up by Courier", isPickedUp));
-
-    bool isInTransit =
-        deliveryStatus == 'in_transit' || deliveryStatus == 'delivered';
-    steps.add(_Step("On the Way", isInTransit));
-
-    bool isDelivered = deliveryStatus == 'delivered';
-    steps.add(_Step("Delivered", isDelivered, isLast: true));
+    bool isFinalized = status == "SUCCESS";
+    steps.add(_Step("Order Completed", isFinalized, isLast: true));
 
     return steps;
   }

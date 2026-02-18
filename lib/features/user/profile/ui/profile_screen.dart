@@ -1,291 +1,290 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:ecom/features/user/orders/ui/order_screen.dart';
 import 'package:ecom/features/user/wishlist/ui/wishlist_screen.dart';
 import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/features/auth/controller/auth_controller.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ecom/core/routes/app_routes.dart';
-import 'package:ecom/shared/widgets/const/color_const.dart';
+
+import 'package:ecom/core/theme/neo_colors.dart';
+import 'package:ecom/core/utils/responsive_layout.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ecom/features/user/profile/ui/edit_profile_screen.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final profileCtrl = Get.find<ProfileController>();
-    final authCtrl = Get.find<AuthController>();
+    final user = Supabase.instance.client.auth.currentUser;
 
     return Scaffold(
-      backgroundColor: ColorConst.bg,
-      body: Obx(() {
-        final profile = profileCtrl.profile.value;
+      backgroundColor: NeoColors.background,
+      body: Stack(
+        children: [
+          // 1. Kinetic Background
+          Positioned.fill(child: CustomPaint(painter: _GridPainter())),
 
-        if (profile == null) {
-          return const Center(
-            child: CircularProgressIndicator(color: ColorConst.primary),
-          );
-        }
-
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              /// 🎭 HERO HEADER
-              _buildModernHeader(profile),
-
-              const SizedBox(height: 30),
-
-              /// 📦 ACCOUNT SECTIONS
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FadeInLeft(
-                      child: const Text(
-                        "My Activity",
-                        style: TextStyle(
-                          color: ColorConst.textLight,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _profileCard(
-                      icon: Icons.shopping_bag_rounded,
-                      title: "My Orders",
-                      subtitle: "View history & track packages",
-                      color: ColorConst.primary,
-                      onTap: () => Get.to(() => const OrderScreen()),
-                    ),
-                    _profileCard(
-                      icon: Icons.favorite_rounded,
-                      title: "Wishlist",
-                      subtitle: "Your favorite items saved",
-                      color: Colors.pinkAccent,
-                      onTap: () => Get.to(() => const WishlistScreen()),
-                    ),
-
-                    const SizedBox(height: 32),
-                    FadeInLeft(
-                      delay: const Duration(milliseconds: 200),
-                      child: const Text(
-                        "Settings",
-                        style: TextStyle(
-                          color: ColorConst.textLight,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _profileCard(
-                      icon: Icons.location_on_rounded,
-                      title: "Addresses",
-                      subtitle: profile.address.isNotEmpty
-                          ? profile.address
-                          : "Add your shipping address",
-                      color: Colors.blueAccent,
-                      onTap: () => Get.to(() => const EditProfileScreen()),
-                    ),
-                    _profileCard(
-                      icon: Icons.security_rounded,
-                      title: "Security",
-                      subtitle: "Change password & sessions",
-                      color: Colors.tealAccent,
-                      onTap: () {},
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    /// 🚪 LOGOUT BUTTON
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 400),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 60,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await authCtrl.logout();
-                            Get.offAllNamed(AppRoutes.login);
-                          },
-                          icon: const Icon(
-                            Icons.logout_rounded,
-                            color: ColorConst.danger,
-                          ),
-                          label: const Text(
-                            "Sign Out",
-                            style: TextStyle(
-                              color: ColorConst.danger,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: ColorConst.danger,
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 120), // Buffer for nav bar
-                  ],
-                ),
-              ),
-            ],
+          // 2. Ambient Orbs
+          Positioned(
+            top: -100,
+            left: -100,
+            child: _FloatingOrb(NeoColors.accent.withOpacity(0.1), 400),
           ),
-        );
-      }),
-    );
-  }
+          Positioned(
+            bottom: 100,
+            right: -50,
+            child: _FloatingOrb(Colors.purpleAccent.withOpacity(0.05), 300),
+          ),
 
-  Widget _buildModernHeader(profile) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 80, 24, 40),
-      decoration: BoxDecoration(
-        color: ColorConst.card,
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(50)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+          // 3. Content
+          ResponsiveLayout(
+            child: user == null
+                ? _buildGuestState(context)
+                : _buildProfileContent(context),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGuestState(BuildContext context) {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Stack(
+          Icon(
+            Icons.lock_outline_rounded,
+            size: 60,
+            color: NeoColors.textLow.withOpacity(0.5),
+          ),
+          const SizedBox(height: 30),
+          Text(
+            "RESTRICTED AREA",
+            style: GoogleFonts.oswald(
+              color: NeoColors.textHigh,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+            ),
+          ).animate().fadeIn().moveY(begin: 20),
+          const SizedBox(height: 40),
+          _actionButton("LOGIN", () => Get.toNamed(AppRoutes.login)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileContent(BuildContext context) {
+    final profileCtrl = Get.find<ProfileController>();
+    final authCtrl = Get.find<AuthController>();
+
+    return Obx(() {
+      final profile = profileCtrl.profile.value;
+      if (profile == null) {
+        return const Center(
+          child: CircularProgressIndicator(color: NeoColors.accent),
+        );
+      }
+
+      return Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: ColorConst.primaryGradient,
-                  border: Border.all(color: ColorConst.surface, width: 4),
-                ),
-                child: Center(
-                  child: Text(
-                    profile.fullName[0].toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 44,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
+              _buildAvatarSection(profile),
+              const SizedBox(height: 50),
+              _menuItem(
+                "ORDERS",
+                Icons.history_edu_rounded,
+                () => Get.to(() => const OrderScreen()),
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => Get.to(() => const EditProfileScreen()),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: ColorConst.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
+              _menuItem(
+                "WISHLIST",
+                Icons.bookmark_border_rounded,
+                () => Get.to(() => const WishlistScreen()),
+              ),
+              _menuItem(
+                "SAVED ADDRESSES",
+                Icons.map_outlined,
+                () => Get.to(() => const EditProfileScreen()),
+              ),
+              const SizedBox(height: 40),
+              _actionButton(
+                "LOGOUT",
+                () async => await authCtrl.logout(),
+                isDestructive: true,
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            profile.fullName,
-            style: const TextStyle(
-              color: ColorConst.textLight,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-            ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildAvatarSection(profile) {
+    return Column(
+      children: [
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: NeoColors.accent, width: 2),
+            color: NeoColors.background,
+            boxShadow: [
+              BoxShadow(
+                color: NeoColors.accent.withOpacity(0.2),
+                blurRadius: 50,
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: ColorConst.surface.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(20),
-            ),
+          child: Center(
             child: Text(
-              profile.email,
-              style: const TextStyle(
-                color: ColorConst.textMuted,
-                fontSize: 13,
+              profile.fullName.isNotEmpty
+                  ? profile.fullName[0].toUpperCase()
+                  : "U",
+              style: GoogleFonts.oswald(
+                color: NeoColors.accent,
+                fontSize: 48,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-        ],
-      ),
+        ).animate().scale(),
+        const SizedBox(height: 20),
+        Text(
+          profile.fullName.toUpperCase(),
+          style: GoogleFonts.oswald(
+            color: NeoColors.textHigh,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+          ),
+        ),
+        Text(
+          profile.email,
+          style: GoogleFonts.montserrat(
+            color: NeoColors.textLow,
+            fontSize: 12,
+            letterSpacing: 1,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _profileCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: ColorConst.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: ColorConst.surface.withValues(alpha: 0.6)),
+  Widget _menuItem(String title, IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          color: Colors.white.withOpacity(0.02),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.oswald(
+                color: NeoColors.textHigh,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+            Icon(icon, color: NeoColors.textLow, size: 20),
+          ],
+        ),
       ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.all(12),
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(icon, color: color, size: 24),
+    ).animate().fadeIn().slideX(begin: 0.1);
+  }
+
+  Widget _actionButton(
+    String label,
+    VoidCallback onTap, {
+    bool isDestructive = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isDestructive
+              ? NeoColors.error.withOpacity(0.1)
+              : NeoColors.accent,
+          border: isDestructive ? Border.all(color: NeoColors.error) : null,
         ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: ColorConst.textLight,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(color: ColorConst.textMuted, fontSize: 12),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: ColorConst.bg,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(
-            Icons.arrow_forward_ios_rounded,
-            color: ColorConst.textMuted,
-            size: 12,
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.oswald(
+              color: isDestructive ? NeoColors.error : NeoColors.background,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.03)
+      ..strokeWidth = 1;
+
+    const spacing = 40.0;
+
+    for (var i = 0.0; i < size.width; i += spacing) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+
+    for (var i = 0.0; i < size.height; i += spacing) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _FloatingOrb extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const _FloatingOrb(this.color, this.size);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color,
+            boxShadow: [
+              BoxShadow(color: color, blurRadius: 100, spreadRadius: 20),
+            ],
+          ),
+        )
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .scale(
+          begin: const Offset(0.9, 0.9),
+          end: const Offset(1.1, 1.1),
+          duration: const Duration(seconds: 4),
+        );
   }
 }

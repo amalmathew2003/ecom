@@ -48,11 +48,50 @@ class OrderController extends GetxController {
   }
 
   Future<void> cancelOrder(String orderId) async {
-    await supabase
-        .from('orders')
-        .update({'payment_status': 'CANCELLED'})
-        .eq('id', orderId);
+    try {
+      // Try with 'status' column first
+      await supabase
+          .from('orders')
+          .update({'status': 'CANCELLED'})
+          .eq('id', orderId);
+    } catch (e) {
+      // Fallback to 'payment_status' column
+      try {
+        await supabase
+            .from('orders')
+            .update({'payment_status': 'CANCELLED'})
+            .eq('id', orderId);
+      } catch (e2) {
+        Get.snackbar('Error', 'Failed to cancel order: $e2');
+        return;
+      }
+    }
 
     fetchOrders();
+  }
+
+  Future<void> confirmDelivery(String orderId) async {
+    try {
+      // Finalize the order
+      try {
+        await supabase
+            .from('orders')
+            .update({'status': 'SUCCESS', 'delivery_status': 'delivered'})
+            .eq('id', orderId);
+      } catch (e) {
+        await supabase
+            .from('orders')
+            .update({
+              'payment_status': 'SUCCESS',
+              'delivery_status': 'delivered',
+            })
+            .eq('id', orderId);
+      }
+
+      Get.snackbar('Success', 'Order finalized. Thank you!');
+      fetchOrders();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to confirm delivery');
+    }
   }
 }

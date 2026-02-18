@@ -6,8 +6,10 @@ class AdminOrderController extends GetxController {
   final supabase = Supabase.instance.client;
 
   final orders = <OrderModel>[].obs;
+  final filteredOrders = <OrderModel>[].obs;
   final isLoading = false.obs;
   final totalRevenue = 0.0.obs;
+  final selectedFilter = 'ALL'.obs;
 
   @override
   void onInit() {
@@ -54,6 +56,7 @@ class AdminOrderController extends GetxController {
   void _processOrders(List data) {
     final fetchedOrders = data.map((e) => OrderModel.fromJson(e)).toList();
     orders.assignAll(fetchedOrders);
+    applyFilter(selectedFilter.value);
 
     // Calculate revenue from SUCCESS orders
     double total = 0;
@@ -65,19 +68,64 @@ class AdminOrderController extends GetxController {
     totalRevenue.value = total;
   }
 
+  void applyFilter(String filter) {
+    selectedFilter.value = filter;
+    if (filter == 'ALL') {
+      filteredOrders.assignAll(orders);
+    } else {
+      filteredOrders.assignAll(
+        orders.where((order) => order.status == filter).toList(),
+      );
+    }
+  }
+
   Future<void> updateOrderStatus(String orderId, String status) async {
     try {
       final adminId = supabase.auth.currentUser?.id;
 
-      await supabase
-          .from('orders')
-          .update({'payment_status': status, 'managed_by': adminId})
-          .eq('id', orderId);
+      // Try with 'status' column first (newer schema)
+      try {
+        await supabase
+            .from('orders')
+            .update({'status': status, 'managed_by': adminId})
+            .eq('id', orderId);
 
-      await fetchAllOrders();
-      Get.snackbar('Success', 'Order status updated to $status');
-    } catch (e) {
-      // Fallback update if managed_by column is missing
+        await fetchAllOrders();
+        Get.snackbar('Success', 'Order status updated to $status');
+        return;
+      } catch (e) {
+        Get.log("Update with 'status' failed: $e");
+      }
+
+      // Fallback 1: Try with 'payment_status' column (older schema)
+      try {
+        await supabase
+            .from('orders')
+            .update({'payment_status': status, 'managed_by': adminId})
+            .eq('id', orderId);
+
+        await fetchAllOrders();
+        Get.snackbar('Success', 'Order status updated to $status');
+        return;
+      } catch (e) {
+        Get.log("Update with 'payment_status' and managed_by failed: $e");
+      }
+
+      // Fallback 2: Try without managed_by (in case column doesn't exist)
+      try {
+        await supabase
+            .from('orders')
+            .update({'status': status})
+            .eq('id', orderId);
+
+        await fetchAllOrders();
+        Get.snackbar('Success', 'Order status updated');
+        return;
+      } catch (e) {
+        Get.log("Update with 'status' only failed: $e");
+      }
+
+      // Fallback 3: Last attempt with payment_status only
       try {
         await supabase
             .from('orders')
@@ -85,10 +133,20 @@ class AdminOrderController extends GetxController {
             .eq('id', orderId);
 
         await fetchAllOrders();
-        Get.snackbar('Success', 'Order status updated (managed_by skipped)');
-      } catch (e2) {
-        Get.snackbar('Error', 'Failed to update order status: $e2');
+        Get.snackbar('Success', 'Order status updated');
+        return;
+      } catch (e) {
+        Get.log("All update attempts failed: $e");
       }
+
+      // If all attempts fail, show error
+      Get.snackbar(
+        'Error',
+        'Failed to update order status. Please check database schema.',
+        duration: const Duration(seconds: 4),
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update order status: $e');
     }
   }
 
@@ -101,7 +159,7 @@ class AdminOrderController extends GetxController {
       final response = await supabase
           .from('profiles')
           .select('id, full_name, email')
-          .eq('role', 'delivery');
+          .neq('role', 'admin');
 
       deliveryPersonnel.assignAll(List<Map<String, dynamic>>.from(response));
     } catch (e) {
@@ -114,6 +172,7 @@ class AdminOrderController extends GetxController {
     String deliveryPersonId,
   ) async {
     try {
+      // 1. Update delivery info
       await supabase
           .from('orders')
           .update({
@@ -122,8 +181,22 @@ class AdminOrderController extends GetxController {
           })
           .eq('id', orderId);
 
+      // 2. Automatically change status to OUT_FOR_DELIVERY
+      try {
+        await supabase
+            .from('orders')
+            .update({'status': 'OUT_FOR_DELIVERY'})
+            .eq('id', orderId);
+      } catch (e) {
+        // Fallback to payment_status if status column doesn't exist
+        await supabase
+            .from('orders')
+            .update({'payment_status': 'OUT_FOR_DELIVERY'})
+            .eq('id', orderId);
+      }
+
       await fetchAllOrders();
-      Get.snackbar('Success', 'Delivery person assigned successfully');
+      Get.snackbar('Success', 'Delivery partner assigned & order updated');
     } catch (e) {
       Get.snackbar('Error', 'Failed to assign delivery person: $e');
     }

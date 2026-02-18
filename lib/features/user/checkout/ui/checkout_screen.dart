@@ -4,8 +4,13 @@ import 'package:ecom/features/user/profile/controller/profile_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_mode.dart';
 import 'package:ecom/features/user/checkout/ui/payment_method_selector.dart';
+import 'package:ecom/features/user/checkout/ui/order_success_screen.dart';
 import 'package:ecom/service/razorpay_service.dart';
-import 'package:ecom/shared/widgets/const/color_const.dart';
+import 'package:ecom/core/theme/neo_colors.dart';
+import 'package:ecom/core/utils/responsive_layout.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -22,20 +27,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final checkoutCrl = Get.find<CheckoutController>();
   final cartCrl = Get.find<CartController>();
   final profileCrl = Get.find<ProfileController>();
-  final razorpayService = RazorpayService();
+  final razorpayService = Get.find<RazorpayService>();
   final isLoading = false.obs;
 
   @override
   void initState() {
     super.initState();
-
-    /// 🔒 SAFETY: ensure cart amount is loaded
     if (checkoutCrl.mode.value == CheckoutMode.cart) {
       cartCrl.fetchCart();
     }
-
-    /// 💳 Initialize Razorpay once
-    razorpayService.init(
+    razorpayService.setupCallbacks(
       onSuccess: _onPaymentSuccess,
       onError: _onPaymentError,
     );
@@ -49,25 +50,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       } else {
         await _placeBuyNowOrder(paymentId);
       }
-
-      // 🔄 Sync orders before navigating back
       await Get.find<OrderController>().fetchOrders();
-
-      Get.offAllNamed('/user-nav'); // Go back to root
-      Get.snackbar(
-        "Success",
-        "Order placed successfully!",
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
+      Get.offAll(() => const OrderSuccessScreen());
     } catch (e) {
       Get.log("Transaction Error: $e");
       Get.defaultDialog(
-        title: "Order Error",
+        backgroundColor: NeoColors.surface,
+        title: "ORDER ERROR",
+        titleStyle: GoogleFonts.oswald(color: NeoColors.error),
         middleText:
-            "Payment was successful but we couldn't record your order.\n\nError: $e\n\nPlease contact support with Payment ID: $paymentId",
-        textConfirm: "OK",
+            "Payment successful but recording failed.\n\n$e\n\nPayment ID: $paymentId",
+        middleTextStyle: GoogleFonts.montserrat(color: NeoColors.textMedium),
+        textConfirm: "CONTACT SUPPORT",
         onConfirm: () => Get.back(),
       );
     } finally {
@@ -76,45 +70,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _onPaymentError(String error) {
+    isLoading.value = false;
     Get.snackbar(
-      "Payment Failed",
-      error,
-      backgroundColor: Colors.redAccent,
-      colorText: Colors.white,
+      "PAYMENT FAILED",
+      error.toUpperCase(),
+      backgroundColor: NeoColors.error.withOpacity(0.1),
+      colorText: NeoColors.error,
     );
   }
 
-  @override
-  void dispose() {
-    razorpayService.dispose();
-    super.dispose();
-  }
-
-  /// ================= PAYMENT =================
   Future<void> payment() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      Get.snackbar("Error", "User not logged in");
+      Get.snackbar("ERROR", "PLEASE LOG IN TO CONTINUE");
       return;
     }
 
     final amount = checkoutCrl.payableAmount;
     if (amount <= 0) {
-      Get.snackbar("Error", "Invalid amount. Please try again.");
+      Get.snackbar("ERROR", "INVALID TRANSACTION AMOUNT");
       return;
     }
 
-    // Verify Address and Phone
     final profile = profileCrl.profile.value;
     if (profile == null ||
         profile.address.trim().isEmpty ||
         profile.phone.trim().isEmpty) {
       Get.snackbar(
-        "Missing Information",
-        "Please update your shipping address and phone number in your profile before placing an order.",
-        backgroundColor: Colors.orangeAccent,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 4),
+        "INFO MISSING",
+        "UPDATE SHIPPING ADDRESS & PHONE IN PROFILE",
+        backgroundColor: Colors.orangeAccent.withOpacity(0.1),
+        colorText: Colors.orangeAccent,
         mainButton: TextButton(
           onPressed: () {
             Get.offNamed('/user-nav');
@@ -124,9 +110,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               }
             });
           },
-          child: const Text(
-            "Update Profile",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          child: Text(
+            "UPDATE",
+            style: GoogleFonts.montserrat(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       );
@@ -138,23 +127,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    /// ONLINE
     final userEmail = user.email ?? '';
-    final userPhone = profileCrl.profile.value?.phone ?? '';
+    final userPhone = profile.phone;
 
-    razorpayService.openChackout(
-      amount: amount,
-      email: userEmail,
-      phone: userPhone,
-    );
+    try {
+      razorpayService.openCheckout(
+        amount: amount,
+        email: userEmail,
+        phone: userPhone,
+      );
+    } catch (e) {
+      Get.snackbar("SYSTEM ERROR", "FAILED TO INITIALIZE PAYMENT: $e");
+    }
   }
 
-  /// ================= COD =================
   Future<void> _placeCodOrder() async {
     try {
       isLoading.value = true;
       final uid = Supabase.instance.client.auth.currentUser!.id;
-
       final profile = profileCrl.profile.value;
 
       final orderResponse = await Supabase.instance.client
@@ -163,7 +153,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             'user_id': uid,
             'amount': checkoutCrl.payableAmount,
             'payment_method': 'COD',
-            'payment_status': 'PENDING',
+            'status': 'PENDING',
             'order_type': checkoutCrl.mode.value == CheckoutMode.cart
                 ? 'CART'
                 : 'BUY_NOW',
@@ -177,7 +167,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final String orderId = orderResponse['id'].toString();
 
-      // Save individual items to order_items
       if (checkoutCrl.mode.value == CheckoutMode.cart) {
         final items = cartCrl.cartItems
             .map(
@@ -190,21 +179,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             )
             .toList();
         await Supabase.instance.client.from('order_items').insert(items);
+        await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
+        cartCrl.cartItems.clear();
       } else {
-        // Buy Now logic: we need to find the product price
-        // (Assuming we have access to the product or just use buyNowAmount)
         await Supabase.instance.client.from('order_items').insert({
           'order_id': orderId,
           'product_id': checkoutCrl.productId,
           'quantity': 1,
           'price': checkoutCrl.buyNowAmount ?? 0,
         });
-      }
-
-      if (checkoutCrl.mode.value == CheckoutMode.cart) {
-        await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
-        cartCrl.cartItems.clear();
-      } else {
         await Supabase.instance.client
             .from('cart')
             .delete()
@@ -213,22 +196,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         cartCrl.fetchCart();
       }
 
-      // 🔄 Sync orders before navigating back
       await Get.find<OrderController>().fetchOrders();
-
-      Get.offAllNamed('/user-nav');
-      Get.snackbar("Order Confirmed", "Your COD order has been placed.");
+      Get.offAll(() => const OrderSuccessScreen());
     } catch (e) {
-      Get.snackbar("Error", "Failed to place order: $e");
+      Get.snackbar("ERROR", "DATABASE ERROR: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// ================= DB HELPERS =================
   Future<void> _placeCartOrder(String paymentId) async {
     final uid = Supabase.instance.client.auth.currentUser!.id;
-
     final profile = profileCrl.profile.value;
 
     final orderResponse = await Supabase.instance.client
@@ -238,7 +216,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'amount': cartCrl.totalAmount,
           'payment_id': paymentId,
           'payment_method': 'RAZORPAY',
-          'payment_status': 'SUCCESS',
+          'status': 'SUCCESS',
           'order_type': 'CART',
           'shipping_address': profile?.address ?? '',
           'customer_phone': profile?.phone ?? '',
@@ -248,7 +226,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final String orderId = orderResponse['id'].toString();
 
-    // Save individual items
     final items = cartCrl.cartItems
         .map(
           (item) => {
@@ -260,14 +237,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         )
         .toList();
     await Supabase.instance.client.from('order_items').insert(items);
-
     await Supabase.instance.client.from('cart').delete().eq('user_id', uid);
     cartCrl.cartItems.clear();
   }
 
   Future<void> _placeBuyNowOrder(String paymentId) async {
     final uid = Supabase.instance.client.auth.currentUser!.id;
-
     final profile = profileCrl.profile.value;
 
     final orderResponse = await Supabase.instance.client
@@ -278,7 +253,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'amount': checkoutCrl.buyNowAmount,
           'payment_id': paymentId,
           'payment_method': 'RAZORPAY',
-          'payment_status': 'SUCCESS',
+          'status': 'SUCCESS',
           'order_type': 'BUY_NOW',
           'shipping_address': profile?.address ?? '',
           'customer_phone': profile?.phone ?? '',
@@ -305,98 +280,186 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: ColorConst.bg,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: true,
-            title: const Text(
-              "Checkout",
-              style: TextStyle(
-                color: ColorConst.textLight,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: ColorConst.textLight,
-                size: 20,
-              ),
-              onPressed: () => Get.back(),
-            ),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
+    return Scaffold(
+      backgroundColor: NeoColors.background,
+      body: ResponsiveLayout(
+        child: Stack(
+          children: [
+            Column(
               children: [
-                _summaryCard(),
-                const SizedBox(height: 16),
-                _shippingSection(),
-                const SizedBox(height: 24),
-                const PaymentMethodSelector(),
-                const Spacer(),
-                _payButton(),
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 10, 24, 120),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (ResponsiveLayout.isMobile(context)) {
+                          return Column(
+                            children: [
+                              _summaryCard(),
+                              const SizedBox(height: 24),
+                              _shippingSection(),
+                              const SizedBox(height: 32),
+                              const PaymentMethodSelector(),
+                            ],
+                          );
+                        }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  _summaryCard(),
+                                  const SizedBox(height: 24),
+                                  _shippingSection(),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 40),
+                            const Expanded(
+                              flex: 1,
+                              child: PaymentMethodSelector(),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
+            Positioned(
+              bottom: 40,
+              left: 24,
+              right: 24,
+              child: Obx(() => _payButton()),
+            ),
+            Obx(() {
+              if (isLoading.value) {
+                return Container(
+                  color: Colors.black.withOpacity(0.85),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(
+                          color: NeoColors.accent,
+                        ),
+                        const SizedBox(height: 30),
+                        Text(
+                          "PROCESSING TRANSACTION...",
+                          style: GoogleFonts.oswald(
+                            color: NeoColors.accent,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ],
         ),
-        Obx(() {
-          if (isLoading.value) {
-            return Container(
-              color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(color: ColorConst.primary),
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: NeoColors.textHigh,
+            ),
+            onPressed: () => Get.back(),
+          ),
+          const SizedBox(width: 15),
+          Text(
+            "CHECKOUT",
+            style: GoogleFonts.oswald(
+              color: NeoColors.textHigh,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _summaryCard() {
     return Obx(() {
       return Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(30),
         decoration: BoxDecoration(
-          color: ColorConst.card,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
+          color: NeoColors.surface,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
           children: [
-            const Text(
-              "Total Payable",
-              style: TextStyle(
-                color: ColorConst.textMuted,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "ORDER TOTAL",
+                  style: GoogleFonts.oswald(
+                    color: NeoColors.textLow,
+                    fontSize: 12,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  "₹${checkoutCrl.payableAmount.toStringAsFixed(0)}",
+                  style: GoogleFonts.oswald(
+                    color: NeoColors.accent,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              "₹${checkoutCrl.payableAmount.toStringAsFixed(0)}",
-              style: const TextStyle(
-                color: ColorConst.primary,
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-              ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "SHIPPING",
+                  style: GoogleFonts.oswald(
+                    color: NeoColors.textLow,
+                    fontSize: 12,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  "FREE",
+                  style: GoogleFonts.oswald(
+                    color: Colors.greenAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-      );
+      ).animate().fadeIn().slideY(begin: 0.1);
     });
   }
 
@@ -404,131 +467,128 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Obx(() {
       final profile = profileCrl.profile.value;
       return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: ColorConst.card,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Shipping To",
-                  style: TextStyle(
-                    color: ColorConst.textLight,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Get.offNamed('/user-nav');
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      if (Get.isRegistered<UserNavController>()) {
-                        Get.find<UserNavController>().changeTab(2);
-                      }
-                    });
-                  },
-                  child: const Text(
-                    "Edit",
-                    style: TextStyle(
-                      color: ColorConst.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: NeoColors.surface,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
-            const SizedBox(height: 12),
-            Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "SHIPPING DESTINATION",
+                      style: GoogleFonts.oswald(
+                        color: NeoColors.textHigh,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Get.offNamed('/user-nav');
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          if (Get.isRegistered<UserNavController>()) {
+                            Get.find<UserNavController>().changeTab(2);
+                          }
+                        });
+                      },
+                      child: Text(
+                        "EDIT",
+                        style: GoogleFonts.oswald(
+                          color: NeoColors.accent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                _infoRow(
                   Icons.location_on_rounded,
-                  color: ColorConst.primary,
-                  size: 18,
+                  profile?.address.isNotEmpty == true
+                      ? profile!.address
+                      : "NO ADDRESS SET",
+                  profile?.address.isNotEmpty != true,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    profile?.address.isNotEmpty == true
-                        ? profile!.address
-                        : "No address set. Please update in profile.",
-                    style: TextStyle(
-                      color: profile?.address.isNotEmpty == true
-                          ? ColorConst.textLight
-                          : Colors.redAccent,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(
+                const SizedBox(height: 12),
+                _infoRow(
                   Icons.phone_rounded,
-                  color: ColorConst.primary,
-                  size: 18,
-                ),
-                const SizedBox(width: 12),
-                Text(
                   profile?.phone.isNotEmpty == true
                       ? profile!.phone
-                      : "No phone number",
-                  style: const TextStyle(
-                    color: ColorConst.textLight,
-                    fontSize: 13,
-                  ),
+                      : "NO PHONE NUMBER",
+                  profile?.phone.isNotEmpty != true,
                 ),
               ],
             ),
-          ],
-        ),
-      );
+          )
+          .animate()
+          .fadeIn(delay: const Duration(milliseconds: 200))
+          .slideY(begin: 0.1);
     });
   }
 
-  Widget _payButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 60,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: ColorConst.primaryGradient,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: ColorConst.primary.withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
+  Widget _infoRow(IconData icon, String text, bool isError) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: isError ? NeoColors.error : NeoColors.accent,
+          size: 18,
         ),
-        child: ElevatedButton(
-          onPressed: isLoading.value ? null : payment,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.montserrat(
+              color: isError ? NeoColors.error : NeoColors.textHigh,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          child: const Text(
-            "Place Order",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+        ),
+      ],
+    );
+  }
+
+  Widget _payButton() {
+    return Container(
+      height: 70,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: NeoColors.premiumGradient,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: NeoColors.accent.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: isLoading.value ? null : payment,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+        child: Text(
+          isLoading.value ? "WORKING..." : "PLACE ORDER",
+          style: GoogleFonts.oswald(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
           ),
         ),
       ),
-    );
+    ).animate(delay: const Duration(milliseconds: 400)).fadeIn().scale();
   }
 }

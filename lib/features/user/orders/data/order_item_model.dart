@@ -16,14 +16,17 @@ class OrderItemModel {
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
-    final product = json['products'];
+    final Map<String, dynamic>? product =
+        json['products'] as Map<String, dynamic>?;
+
     return OrderItemModel(
-      id: json['id'].toString(),
-      productId: json['product_id'].toString(),
-      productName: product?['name'] ?? 'Unknown Product',
-      productImage: (product?['image_url'] as List?)?.first ?? '',
-      quantity: json['quantity'] as int,
-      price: (json['price_at_time'] as num).toDouble(),
+      id: json['id']?.toString() ?? '',
+      productId: json['product_id']?.toString() ?? '',
+      productName: product?['name']?.toString() ?? 'Unknown Product',
+      productImage: (product?['image_url'] as List?)?.first?.toString() ?? '',
+      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+      price: (json['price_at_time'] as num? ?? json['price'] as num? ?? 0)
+          .toDouble(),
     );
   }
 }

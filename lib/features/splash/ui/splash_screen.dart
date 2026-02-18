@@ -1,62 +1,70 @@
-import 'package:animate_do/animate_do.dart';
-import 'package:ecom/shared/widgets/const/color_const.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:ecom/core/theme/neo_colors.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
-
-  @override
-  State<SplashPage> createState() => _SplashPageState();
-}
-
-class _SplashPageState extends State<SplashPage> {
-  Alignment logoAlignment = Alignment.centerLeft;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Delay to allow animation trigger
-    Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() {
-        logoAlignment = Alignment.center;
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorConst.bg,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedAlign(
-            alignment: logoAlignment,
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOut,
-            child: Icon(
-              Icons.shopping_cart_rounded,
-              size: 200,
-              color: ColorConst.accent,
-            ),
-          ),
+      backgroundColor: NeoColors.background,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo Container
+            Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: NeoColors.textHigh, width: 3),
+                  ),
+                  child: Text(
+                    "NEO",
+                    style: GoogleFonts.oswald(
+                      fontSize: 60,
+                      fontWeight: FontWeight.w900,
+                      color: NeoColors.textHigh,
+                      letterSpacing: 10,
+                    ),
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 800.ms)
+                .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack)
+                .then()
+                .shimmer(duration: 2.seconds, color: NeoColors.accent),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-          FadeInUpBig(
-            animate: true,
-            child: const Text(
-              'Neo Mart',
-              style: TextStyle(
-                color: ColorConst.accent,
-                fontSize: 30,
+            // Tagline
+            Text(
+              "PREMIUM EVOLUTION",
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
+                color: NeoColors.accent,
+                letterSpacing: 4,
               ),
-            ),
-          ),
-        ],
+            ).animate(delay: 500.ms).fadeIn().slideY(begin: 1),
+
+            const SizedBox(height: 100),
+
+            // Loading Indicator
+            SizedBox(
+              width: 150,
+              child: LinearProgressIndicator(
+                backgroundColor: NeoColors.surface,
+                color: NeoColors.accent,
+                minHeight: 1,
+              ),
+            ).animate(delay: 800.ms).fadeIn(),
+          ],
+        ),
       ),
     );
   }

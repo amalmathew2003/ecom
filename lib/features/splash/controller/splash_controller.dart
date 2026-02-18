@@ -22,7 +22,7 @@ class SplashController extends GetxController {
       final session = supabase.auth.currentSession;
 
       if (session == null) {
-        _navigateTo(AppRoutes.login);
+        _navigateTo(AppRoutes.landing);
         return;
       }
 
@@ -43,10 +43,6 @@ class SplashController extends GetxController {
 
       if (response['role'] == 'admin') {
         _navigateTo(AppRoutes.adminHome);
-      } else if (response['role'] == 'staff') {
-        _navigateTo(AppRoutes.staffHome);
-      } else if (response['role'] == 'delivery') {
-        _navigateTo(AppRoutes.deliveryHome);
       } else {
         _navigateTo(AppRoutes.usernav);
       }

@@ -1,9 +1,10 @@
 import 'dart:io';
-
 import 'package:ecom/features/admin/products/controller/category_add_controller.dart';
 import 'package:ecom/features/admin/products/controller/product_controller.dart';
 import 'package:ecom/features/admin/products/controller/sub_category_controller.dart';
-import 'package:ecom/shared/widgets/const/color_const.dart';
+import 'package:ecom/core/theme/neo_colors.dart';
+import 'package:ecom/core/utils/responsive_layout.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,289 +36,298 @@ class AdminAddProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorConst.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'Add New Product',
-          style: TextStyle(
-            color: ColorConst.textLight,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: ColorConst.textLight,
-            size: 20,
-          ),
-          onPressed: () => Get.back(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      backgroundColor: NeoColors.background,
+      body: ResponsiveLayout(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// IMAGE PICKER SECTION
-            const Text(
-              'Product Gallery',
-              style: TextStyle(
-                color: ColorConst.textLight,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            _buildHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle("PRODUCT GALLERY"),
+                    const SizedBox(height: 15),
+                    _buildImagePicker(),
+                    const SizedBox(height: 40),
+                    _sectionTitle("SPECIFICATIONS"),
+                    const SizedBox(height: 20),
+                    _buildForm(),
+                    const SizedBox(height: 60),
+                    _buildSubmitBtn(),
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Obx(() {
-              return GestureDetector(
-                onTap: pickImages,
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: ColorConst.card,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: ColorConst.surface,
-                      width: 2,
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: selectedImages.isEmpty
-                      ? const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_photo_alternate_rounded,
-                              size: 48,
-                              color: ColorConst.primary,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              'Tap to upload images',
-                              style: TextStyle(
-                                color: ColorConst.textMuted,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(12),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: selectedImages.length,
-                          itemBuilder: (_, index) {
-                            return Container(
-                              width: 140,
-                              margin: const EdgeInsets.only(right: 12),
-                              child: Stack(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.file(
-                                      selectedImages[index],
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: GestureDetector(
-                                      onTap: () =>
-                                          selectedImages.removeAt(index),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black54,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.close_rounded,
-                                          size: 16,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              );
-            }),
-
-            const SizedBox(height: 32),
-
-            /// FORM SECTION
-            const Text(
-              'Product Details',
-              style: TextStyle(
-                color: ColorConst.textLight,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            /// CATEGORY DROPDOWNS
-            Row(
-              children: [
-                Expanded(
-                  child: Obx(() {
-                    return _buildDropdown(
-                      label: 'Category',
-                      value: selectedCategoryId.value,
-                      items: categoryCtrl.categories.map((cat) {
-                        return DropdownMenuItem(
-                          value: cat['id'].toString(),
-                          child: Text(cat['name']),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        selectedCategoryId.value = val;
-                        selectedSubCategoryId.value = null;
-                        subCategoryCtrl.fetchSubCategories(val!);
-                      },
-                    );
-                  }),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Obx(() {
-                    return _buildDropdown(
-                      label: 'Sub Category',
-                      value: selectedSubCategoryId.value,
-                      disabled: selectedCategoryId.value == null,
-                      items: subCategoryCtrl.subCategories.map((sub) {
-                        return DropdownMenuItem(
-                          value: sub['id'].toString(),
-                          child: Text(sub['name']),
-                        );
-                      }).toList(),
-                      onChanged: (val) => selectedSubCategoryId.value = val,
-                    );
-                  }),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            _buildTextField(
-              controller: nameCtrl,
-              label: 'Product Name',
-              icon: Icons.shopping_bag_outlined,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: descCtrl,
-              label: 'Description',
-              icon: Icons.description_outlined,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    controller: priceCtrl,
-                    label: 'Price',
-                    icon: Icons.payments_outlined,
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTextField(
-                    controller: stockCtrl,
-                    label: 'Stock',
-                    icon: Icons.inventory_2_outlined,
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 48),
-
-            /// SUBMIT BUTTON
-            Obx(() {
-              return SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: ColorConst.primaryGradient,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ColorConst.primary.withValues(alpha: 0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: productCtrl.isLoading.value ? null : _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: productCtrl.isLoading.value
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            'Launch Product',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
-                ),
-              );
-            }),
-            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  void _submitForm() {
-    if (selectedImages.isEmpty ||
-        selectedCategoryId.value == null ||
-        selectedSubCategoryId.value == null ||
-        nameCtrl.text.isEmpty ||
-        priceCtrl.text.isEmpty ||
-        stockCtrl.text.isEmpty) {
-      Get.snackbar('Error', 'Please fill all fields');
-      return;
-    }
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: NeoColors.textHigh,
+            ),
+            onPressed: () => Get.back(),
+          ),
+          const SizedBox(width: 15),
+          Text(
+            "NEW PRODUCT",
+            style: GoogleFonts.oswald(
+              color: NeoColors.textHigh,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    final stock = int.tryParse(stockCtrl.text.trim());
-    if (stock == null || stock < 0) {
-      Get.snackbar('Error', 'Invalid stock value');
-      return;
-    }
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.oswald(
+        color: NeoColors.textLow,
+        fontSize: 13,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 2,
+      ),
+    );
+  }
 
-    productCtrl.addProduct(
-      name: nameCtrl.text.trim(),
-      description: descCtrl.text.trim(),
-      price: double.parse(priceCtrl.text.trim()),
-      images: selectedImages,
-      categoryId: selectedCategoryId.value!,
-      subCategoryId: selectedSubCategoryId.value!,
-      stock: stock,
+  Widget _buildImagePicker() {
+    return Obx(() {
+      return GestureDetector(
+        onTap: pickImages,
+        child: Container(
+          height: 200,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: NeoColors.surface,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: Colors.white.withOpacity(0.05), width: 2),
+          ),
+          child: selectedImages.isEmpty
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_photo_alternate_rounded,
+                      size: 50,
+                      color: NeoColors.accent.withOpacity(0.5),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      "UPLOAD ASSETS",
+                      style: GoogleFonts.oswald(
+                        color: NeoColors.textLow,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: selectedImages.length,
+                  itemBuilder: (_, index) => _imagePreview(index),
+                ),
+        ),
+      );
+    });
+  }
+
+  Widget _imagePreview(int index) {
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 15),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.file(
+              selectedImages[index],
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: GestureDetector(
+              onTap: () => selectedImages.removeAt(index),
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForm() {
+    final isMobile = ResponsiveLayout.isMobile(Get.context!);
+    return Column(
+      children: [
+        if (isMobile) ...[
+          Obx(
+            () => _buildDropdown(
+              label: 'CATEGORY',
+              value: selectedCategoryId.value,
+              items: categoryCtrl.categories
+                  .map(
+                    (cat) => DropdownMenuItem(
+                      value: cat['id'].toString(),
+                      child: Text(cat['name'].toUpperCase()),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (val) {
+                selectedCategoryId.value = val;
+                selectedSubCategoryId.value = null;
+                subCategoryCtrl.fetchSubCategories(val!);
+              },
+            ),
+          ),
+          const SizedBox(height: 15),
+          Obx(
+            () => _buildDropdown(
+              label: 'SUB CATEGORY',
+              value: selectedSubCategoryId.value,
+              disabled: selectedCategoryId.value == null,
+              items: subCategoryCtrl.subCategories
+                  .map(
+                    (sub) => DropdownMenuItem(
+                      value: sub['id'].toString(),
+                      child: Text(sub['name'].toUpperCase()),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (val) => selectedSubCategoryId.value = val,
+            ),
+          ),
+        ] else
+          Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => _buildDropdown(
+                    label: 'CATEGORY',
+                    value: selectedCategoryId.value,
+                    items: categoryCtrl.categories
+                        .map(
+                          (cat) => DropdownMenuItem(
+                            value: cat['id'].toString(),
+                            child: Text(cat['name'].toUpperCase()),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (val) {
+                      selectedCategoryId.value = val;
+                      selectedSubCategoryId.value = null;
+                      subCategoryCtrl.fetchSubCategories(val!);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Obx(
+                  () => _buildDropdown(
+                    label: 'SUB CATEGORY',
+                    value: selectedSubCategoryId.value,
+                    disabled: selectedCategoryId.value == null,
+                    items: subCategoryCtrl.subCategories
+                        .map(
+                          (sub) => DropdownMenuItem(
+                            value: sub['id'].toString(),
+                            child: Text(sub['name'].toUpperCase()),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (val) => selectedSubCategoryId.value = val,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        const SizedBox(height: 20),
+        _buildTextField(
+          controller: nameCtrl,
+          label: 'PRODUCT NAME',
+          icon: Icons.shopping_bag_outlined,
+        ),
+        const SizedBox(height: 20),
+        _buildTextField(
+          controller: descCtrl,
+          label: 'DESCRIPTION',
+          icon: Icons.description_outlined,
+          maxLines: 4,
+        ),
+        const SizedBox(height: 20),
+        if (isMobile) ...[
+          _buildTextField(
+            controller: priceCtrl,
+            label: 'PRICE (₹)',
+            icon: Icons.payments_outlined,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 15),
+          _buildTextField(
+            controller: stockCtrl,
+            label: 'STOCK',
+            icon: Icons.inventory_2_outlined,
+            keyboardType: TextInputType.number,
+          ),
+        ] else
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: priceCtrl,
+                  label: 'PRICE (₹)',
+                  icon: Icons.payments_outlined,
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildTextField(
+                  controller: stockCtrl,
+                  label: 'STOCK',
+                  icon: Icons.inventory_2_outlined,
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 
@@ -330,26 +340,31 @@ class AdminAddProductPage extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: ColorConst.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorConst.surface, width: 1.5),
+        color: NeoColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: const TextStyle(
-          color: ColorConst.textLight,
-          fontWeight: FontWeight.w500,
+        style: GoogleFonts.montserrat(
+          color: NeoColors.textHigh,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
         ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: ColorConst.textMuted),
-          prefixIcon: Icon(icon, color: ColorConst.primary, size: 22),
+          labelStyle: GoogleFonts.oswald(
+            color: NeoColors.textLow,
+            fontSize: 12,
+            letterSpacing: 1,
+          ),
+          prefixIcon: Icon(icon, color: NeoColors.accent, size: 20),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
+            horizontal: 24,
+            vertical: 20,
           ),
         ),
       ),
@@ -364,35 +379,114 @@ class AdminAddProductPage extends StatelessWidget {
     bool disabled = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: disabled
-            ? ColorConst.card.withValues(alpha: 0.5)
-            : ColorConst.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorConst.surface, width: 1.5),
+            ? NeoColors.surface.withOpacity(0.5)
+            : NeoColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<String>(
-          initialValue: value,
-          dropdownColor: ColorConst.card,
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: ColorConst.textMuted,
-          ),
+          value: value,
+          dropdownColor: NeoColors.surface,
+          icon: const Icon(Icons.expand_more_rounded, color: NeoColors.textLow),
           decoration: InputDecoration(
             labelText: label,
-            labelStyle: const TextStyle(color: ColorConst.textMuted),
+            labelStyle: GoogleFonts.oswald(
+              color: NeoColors.textLow,
+              fontSize: 11,
+              letterSpacing: 1,
+            ),
             border: InputBorder.none,
           ),
           items: items,
           onChanged: disabled ? null : onChanged,
-          style: const TextStyle(
-            color: ColorConst.textLight,
-            fontWeight: FontWeight.w500,
+          style: GoogleFonts.montserrat(
+            color: NeoColors.textHigh,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSubmitBtn() {
+    return Obx(() {
+      return Container(
+        height: 70,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: NeoColors.premiumGradient,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: NeoColors.accent.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: productCtrl.isLoading.value ? null : _submitForm,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
+          child: productCtrl.isLoading.value
+              ? const CircularProgressIndicator(color: Colors.white)
+              : Text(
+                  "LAUNCH PRODUCT",
+                  style: GoogleFonts.oswald(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+        ),
+      );
+    });
+  }
+
+  void _submitForm() {
+    if (selectedImages.isEmpty ||
+        selectedCategoryId.value == null ||
+        selectedSubCategoryId.value == null ||
+        nameCtrl.text.isEmpty ||
+        priceCtrl.text.isEmpty ||
+        stockCtrl.text.isEmpty) {
+      Get.snackbar(
+        'ENTRY ERROR',
+        'PLEASE COMPLE ALL FIELDS',
+        backgroundColor: NeoColors.error.withOpacity(0.1),
+        colorText: NeoColors.error,
+      );
+      return;
+    }
+    final stock = int.tryParse(stockCtrl.text.trim());
+    if (stock == null || stock < 0) {
+      Get.snackbar(
+        'ENTRY ERROR',
+        'INVALID STOCK COUNT',
+        backgroundColor: NeoColors.error.withOpacity(0.1),
+        colorText: NeoColors.error,
+      );
+      return;
+    }
+    productCtrl.addProduct(
+      name: nameCtrl.text.trim(),
+      description: descCtrl.text.trim(),
+      price: double.parse(priceCtrl.text.trim()),
+      images: selectedImages,
+      categoryId: selectedCategoryId.value!,
+      subCategoryId: selectedSubCategoryId.value!,
+      stock: stock,
     );
   }
 }

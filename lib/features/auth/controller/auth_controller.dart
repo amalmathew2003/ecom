@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ecom/core/theme/neo_colors.dart';
 import '../data/auth_service.dart';
+
 import '../../../core/routes/app_routes.dart';
 
 class AuthController extends GetxController {
@@ -30,10 +32,6 @@ class AuthController extends GetxController {
 
       if (profile?['role'] == 'admin') {
         Get.offAllNamed(AppRoutes.adminHome);
-      } else if (profile?['role'] == 'staff') {
-        Get.offAllNamed(AppRoutes.staffHome);
-      } else if (profile?['role'] == 'delivery') {
-        Get.offAllNamed(AppRoutes.deliveryHome);
       } else {
         Get.offAllNamed(AppRoutes.usernav);
       }
@@ -44,23 +42,20 @@ class AuthController extends GetxController {
       Get.snackbar(
         'Login Failed',
         "$message\ncheck your credentials and try again.",
-        backgroundColor: const Color(0xFF1E293B), // dark slate
-        colorText: Colors.white,
+        backgroundColor: NeoColors.surface,
+        colorText: NeoColors.textHigh,
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(16),
-        borderRadius: 14,
+        borderRadius: 20,
         boxShadows: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .25),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: NeoColors.accent.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
-        icon: const Icon(
-          Icons.error_outline,
-          color: Color(0xFF818CF8), // indigo accent
-        ),
-        duration: const Duration(seconds: 3),
+        icon: const Icon(Icons.error_outline_rounded, color: NeoColors.error),
+        duration: const Duration(seconds: 4),
       );
     } finally {
       isLoading.value = false;
@@ -83,23 +78,20 @@ class AuthController extends GetxController {
       Get.snackbar(
         'Registration Failed',
         "$message\nplease try again.",
-        backgroundColor: const Color(0xFF1E293B), // dark slate
-        colorText: Colors.white,
+        backgroundColor: NeoColors.surface,
+        colorText: NeoColors.textHigh,
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(26),
-        borderRadius: 14,
+        borderRadius: 20,
         boxShadows: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .20),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: NeoColors.accent.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
-        icon: const Icon(
-          Icons.error_outline,
-          color: Color(0xFF818CF8), // indigo accent
-        ),
-        duration: const Duration(seconds: 3),
+        icon: const Icon(Icons.error_outline_rounded, color: NeoColors.error),
+        duration: const Duration(seconds: 4),
       );
     } finally {
       isLoading.value = false;
@@ -109,6 +101,6 @@ class AuthController extends GetxController {
   // 🔹 LOGOUT
   Future<void> logout() async {
     await _service.logout();
-    Get.offAllNamed(AppRoutes.login);
+    Get.offAllNamed(AppRoutes.landing);
   }
 }

@@ -1,67 +1,115 @@
-import 'package:animate_do/animate_do.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:ecom/features/user/orders/controller/order_controller.dart';
 import 'package:ecom/features/user/orders/ui/order_details_screen.dart';
-import 'package:ecom/shared/widgets/const/color_const.dart';
+import 'package:ecom/core/theme/neo_colors.dart';
+import 'package:ecom/core/utils/responsive_layout.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class OrderScreen extends StatelessWidget {
+class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
+
+  @override
+  State<OrderScreen> createState() => _OrderScreenState();
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final orderCtrl = Get.find<OrderController>();
+    orderCtrl.fetchOrders();
+  }
 
   @override
   Widget build(BuildContext context) {
     final orderCtrl = Get.find<OrderController>();
 
     return Scaffold(
-      backgroundColor: ColorConst.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "My Orders",
-          style: TextStyle(
-            color: ColorConst.textLight,
-            fontWeight: FontWeight.w900,
-            fontSize: 22,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: ColorConst.textLight,
-            size: 20,
-          ),
-          onPressed: () => Get.back(),
+      backgroundColor: NeoColors.background,
+      body: ResponsiveLayout(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: Obx(() {
+                if (orderCtrl.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: NeoColors.accent),
+                  );
+                }
+                if (orderCtrl.orders.isEmpty) return _buildEmptyState();
+
+                return RefreshIndicator(
+                  color: NeoColors.accent,
+                  onRefresh: orderCtrl.fetchOrders,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      int crossAxisCount = 1;
+                      if (width > 900) crossAxisCount = 2;
+
+                      return GridView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 10,
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: crossAxisCount == 1 ? 2.5 : 2.0,
+                          crossAxisSpacing: 30,
+                          mainAxisSpacing: 30,
+                        ),
+                        itemCount: orderCtrl.orders.length,
+                        itemBuilder: (_, index) {
+                          return _buildOrderCard(
+                                orderCtrl.orders[index],
+                                orderCtrl,
+                              )
+                              .animate(
+                                delay: Duration(milliseconds: index * 50),
+                              )
+                              .fadeIn()
+                              .slideY(begin: 0.1);
+                        },
+                      );
+                    },
+                  ),
+                );
+              }),
+            ),
+          ],
         ),
       ),
-      body: Obx(() {
-        if (orderCtrl.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: ColorConst.primary),
-          );
-        }
+    );
+  }
 
-        if (orderCtrl.orders.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return RefreshIndicator(
-          color: ColorConst.primary,
-          onRefresh: orderCtrl.fetchOrders,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            itemCount: orderCtrl.orders.length,
-            itemBuilder: (_, index) {
-              final order = orderCtrl.orders[index];
-              return FadeInUp(
-                delay: Duration(milliseconds: index * 100),
-                child: _buildOrderCard(order, orderCtrl),
-              );
-            },
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: NeoColors.textHigh,
+            ),
+            onPressed: () => Get.back(),
           ),
-        );
-      }),
+          const SizedBox(width: 15),
+          Text(
+            "ORDER HISTORY",
+            style: GoogleFonts.oswald(
+              color: NeoColors.textHigh,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -73,144 +121,133 @@ class OrderScreen extends StatelessWidget {
           Icon(
             Icons.receipt_long_outlined,
             size: 80,
-            color: ColorConst.textMuted.withValues(alpha: 0.2),
+            color: NeoColors.textLow.withOpacity(0.2),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            "No orders found",
-            style: TextStyle(
-              color: ColorConst.textLight,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          const SizedBox(height: 20),
+          Text(
+            "NO ORDERS YET",
+            style: GoogleFonts.oswald(
+              color: NeoColors.textHigh,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
             ),
           ),
-          const Text(
-            "Your purchase history will appear here",
-            style: TextStyle(color: ColorConst.textMuted, fontSize: 14),
+          const SizedBox(height: 10),
+          Text(
+            "YOUR TRANSACTION HISTORY WILL APPEAR HERE",
+            style: GoogleFonts.montserrat(
+              color: NeoColors.textLow,
+              fontSize: 12,
+            ),
           ),
         ],
-      ),
+      ).animate().fadeIn(),
     );
   }
 
   Widget _buildOrderCard(order, orderCtrl) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: ColorConst.card,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: ColorConst.surface.withValues(alpha: 0.5)),
+        color: NeoColors.surface,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => Get.to(() => OrderDetailsScreen(order: order)),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Order ID: #${order.id.toString().substring(0, 8).toUpperCase()}",
-                            style: const TextStyle(
-                              color: ColorConst.textMuted,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatDate(order.createdAt),
-                            style: const TextStyle(
-                              color: ColorConst.textLight,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      _StatusChip(status: order.status),
-                    ],
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(color: ColorConst.surface),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Total Amount",
-                            style: TextStyle(
-                              color: ColorConst.textMuted,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "₹${order.amount.toStringAsFixed(0)}",
-                            style: const TextStyle(
-                              color: ColorConst.primary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: ColorConst.bg,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 14,
-                          color: ColorConst.textLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (order.managerName != null) ...[
-                    const SizedBox(height: 12),
-                    Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(30),
+          onTap: () async {
+            final result = await Get.to(() => OrderDetailsScreen(order: order));
+            if (result == "cancel")
+              orderCtrl.cancelOrder(order.id);
+            else if (result == "confirm")
+              orderCtrl.confirmDelivery(order.id);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.verified_user_outlined,
-                          size: 14,
-                          color: Colors.greenAccent,
-                        ),
-                        const SizedBox(width: 8),
                         Text(
-                          "Verified by Manager: ${order.managerName}",
-                          style: const TextStyle(
-                            color: Colors.greenAccent,
+                          "ID: #${order.id.toString().substring(0, 8).toUpperCase()}",
+                          style: GoogleFonts.oswald(
+                            color: NeoColors.textLow,
                             fontSize: 11,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _formatDate(order.createdAt),
+                          style: GoogleFonts.montserrat(
+                            color: NeoColors.textHigh,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
+                    _StatusChip(status: order.status),
                   ],
-                ],
-              ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Divider(color: Colors.white10),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "TOTAL AMOUNT",
+                          style: GoogleFonts.oswald(
+                            color: NeoColors.textLow,
+                            fontSize: 10,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "₹${order.amount.toStringAsFixed(0)}",
+                          style: GoogleFonts.oswald(
+                            color: NeoColors.accent,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: NeoColors.background,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14,
+                        color: NeoColors.textHigh,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -220,18 +257,18 @@ class OrderScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
     return "${date.day} ${months[date.month - 1]}, ${date.year}";
   }
@@ -245,7 +282,6 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     Color color;
     IconData icon;
-
     switch (status.toUpperCase()) {
       case 'SUCCESS':
         color = Colors.greenAccent;
@@ -254,6 +290,14 @@ class _StatusChip extends StatelessWidget {
       case 'PENDING':
         color = Colors.orangeAccent;
         icon = Icons.access_time_filled_rounded;
+        break;
+      case 'OUT_FOR_DELIVERY':
+        color = Colors.blueAccent;
+        icon = Icons.local_shipping_rounded;
+        break;
+      case 'DELIVERED':
+        color = Colors.purpleAccent;
+        icon = Icons.mark_email_read_rounded;
         break;
       case 'CANCELLED':
         color = Colors.redAccent;
@@ -265,20 +309,20 @@ class _StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 8),
           Text(
             status.toUpperCase(),
-            style: TextStyle(
+            style: GoogleFonts.oswald(
               color: color,
               fontWeight: FontWeight.w900,
               fontSize: 10,

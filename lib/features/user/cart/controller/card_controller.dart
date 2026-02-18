@@ -7,14 +7,15 @@ class CartController extends GetxController {
 
   final cartItems = <CartItemModel>[].obs;
 
-  String get userId => supabase.auth.currentUser!.id;
+  String? get userId => supabase.auth.currentUser?.id;
 
   Future<void> fetchCart() async {
+    if (userId == null) return;
     try {
       final response = await supabase
           .from('cart')
           .select('id, quantity, products(*)')
-          .eq('user_id', userId);
+          .eq('user_id', userId!);
 
       // ✅ Use .assignAll AND call .refresh()
       cartItems.assignAll(
@@ -31,10 +32,12 @@ class CartController extends GetxController {
     required String productId,
     required int stock,
   }) async {
+    if (userId == null) return;
+
     final existing = await supabase
         .from('cart')
         .select()
-        .eq('user_id', userId)
+        .eq('user_id', userId!)
         .eq('product_id', productId)
         .maybeSingle();
 
@@ -52,7 +55,7 @@ class CartController extends GetxController {
           .eq('id', existing['id']);
     } else {
       await supabase.from('cart').insert({
-        'user_id': userId,
+        'user_id': userId!,
         'product_id': productId,
         'quantity': 1,
       });

@@ -1,7 +1,10 @@
-import 'package:ecom/features/admin/products/controller/product_controller.dart';
-import 'package:ecom/features/user/home/ui/product_details/product_details_screen.dart';
+import 'package:ecom/features/user/home/controller/product_controller.dart';
 import 'package:ecom/features/user/wishlist/controller/wishlist_controller.dart';
-import 'package:ecom/shared/widgets/const/color_const.dart';
+import 'package:ecom/core/theme/neo_colors.dart';
+import 'package:ecom/core/utils/responsive_layout.dart';
+import 'package:ecom/shared/widgets/neo_product_card.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,83 +14,107 @@ class WishlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wishlistCtrl = Get.find<WishlistController>();
-    final productCtrl = Get.find<AdminProductController>();
+    final productCtrl = Get.find<ProductController>();
 
     return Scaffold(
-      backgroundColor: ColorConst.bg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "My Wishlist",
-          style: TextStyle(
-            color: ColorConst.textLight,
-            fontWeight: FontWeight.bold,
-          ),
+      backgroundColor: NeoColors.background,
+      body: ResponsiveLayout(
+        child: Column(
+          children: [
+            _buildHeader(context, wishlistCtrl),
+            Expanded(
+              child: Obx(() {
+                if (wishlistCtrl.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: NeoColors.accent),
+                  );
+                }
+
+                final wishlistProducts = productCtrl.products
+                    .where((p) => wishlistCtrl.wishlistItems.contains(p.id))
+                    .toList();
+
+                if (wishlistProducts.isEmpty) return _buildEmptyState();
+
+                return RefreshIndicator(
+                  onRefresh: () => wishlistCtrl.fetchWishlist(),
+                  color: NeoColors.accent,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      int crossAxisCount = 2;
+                      if (width > 1200)
+                        crossAxisCount = 4;
+                      else if (width > 800)
+                        crossAxisCount = 3;
+
+                      return GridView.builder(
+                        padding: const EdgeInsets.all(24),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: 0.7,
+                          crossAxisSpacing: 24,
+                          mainAxisSpacing: 24,
+                        ),
+                        itemCount: wishlistProducts.length,
+                        itemBuilder: (context, index) {
+                          return NeoProductCard(
+                            product: wishlistProducts[index],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              }),
+            ),
+          ],
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: ColorConst.textLight,
-            size: 20,
-          ),
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          Obx(() {
-            if (wishlistCtrl.wishlistItems.isNotEmpty) {
-              return IconButton(
-                onPressed: () => _confirmClearWishlist(wishlistCtrl),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, WishlistController wishlistCtrl) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              IconButton(
                 icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.redAccent,
+                  Icons.arrow_back_ios_new_rounded,
+                  color: NeoColors.textHigh,
                 ),
-              );
-            }
-            return const SizedBox.shrink();
-          }),
+                onPressed: () => Get.back(),
+              ),
+              const SizedBox(width: 15),
+              Text(
+                "WISHLIST",
+                style: GoogleFonts.oswald(
+                  color: NeoColors.textHigh,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
+          ),
+          Obx(
+            () => wishlistCtrl.wishlistItems.isNotEmpty
+                ? IconButton(
+                    onPressed: () => _confirmClearWishlist(wishlistCtrl),
+                    icon: const Icon(
+                      Icons.delete_sweep_rounded,
+                      color: NeoColors.error,
+                      size: 28,
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
-      body: Obx(() {
-        if (wishlistCtrl.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: ColorConst.primary),
-          );
-        }
-
-        if (wishlistCtrl.wishlistItems.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        // Get products that are in wishlist
-        final wishlistProducts = productCtrl.products
-            .where((p) => wishlistCtrl.wishlistItems.contains(p.id))
-            .toList();
-
-        if (wishlistProducts.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return RefreshIndicator(
-          onRefresh: wishlistCtrl.fetchWishlist,
-          color: ColorConst.primary,
-          child: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: wishlistProducts.length,
-            itemBuilder: (context, index) {
-              final product = wishlistProducts[index];
-              return _buildWishlistCard(product, wishlistCtrl);
-            },
-          ),
-        );
-      }),
     );
   }
 
@@ -99,133 +126,46 @@ class WishlistScreen extends StatelessWidget {
           Icon(
             Icons.favorite_border_rounded,
             size: 80,
-            color: ColorConst.textMuted.withValues(alpha: 0.2),
+            color: NeoColors.textLow.withOpacity(0.2),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            "Your wishlist is empty",
-            style: TextStyle(
-              color: ColorConst.textLight,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          const SizedBox(height: 20),
+          Text(
+            "YOUR WISHLIST IS EMPTY",
+            style: GoogleFonts.oswald(
+              color: NeoColors.textHigh,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            "Tap ❤️ on products to add them here",
-            style: TextStyle(color: ColorConst.textMuted),
+          const SizedBox(height: 10),
+          Text(
+            "TAP ❤️ ON PRODUCTS TO SAVE THEM HERE",
+            style: GoogleFonts.montserrat(
+              color: NeoColors.textLow,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWishlistCard(product, WishlistController wishlistCtrl) {
-    return GestureDetector(
-      onTap: () => Get.to(() => ProductDetailsScreen(product: product)),
-      child: Container(
-        decoration: BoxDecoration(
-          color: ColorConst.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: ColorConst.surface),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image
-            Expanded(
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                    child: Image.network(
-                      product.imageUrl.isNotEmpty ? product.imageUrl.first : '',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: ColorConst.surface,
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          color: ColorConst.textMuted,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Remove Button
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () => wishlistCtrl.toggleWishlist(product.id),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.favorite,
-                          color: Colors.redAccent,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Details
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: ColorConst.textLight,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "₹${product.price.toStringAsFixed(0)}",
-                    style: const TextStyle(
-                      color: ColorConst.primary,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _confirmClearWishlist(WishlistController ctrl) {
     Get.defaultDialog(
-      title: "Clear Wishlist",
-      middleText:
-          "Are you sure you want to remove all items from your wishlist?",
-      textConfirm: "Clear All",
-      textCancel: "Cancel",
+      backgroundColor: NeoColors.surface,
+      title: "CLEAR WISHLIST",
+      titleStyle: GoogleFonts.oswald(
+        color: NeoColors.textHigh,
+        letterSpacing: 1,
+      ),
+      middleText: "Are you sure you want to remove everything?",
+      middleTextStyle: GoogleFonts.montserrat(color: NeoColors.textLow),
+      textConfirm: "YES, CLEAR ALL",
+      textCancel: "CANCEL",
       confirmTextColor: Colors.white,
-      buttonColor: Colors.redAccent,
+      buttonColor: NeoColors.error,
+      cancelTextColor: NeoColors.textLow,
       onConfirm: () {
         ctrl.clearWishlist();
         Get.back();

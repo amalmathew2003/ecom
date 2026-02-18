@@ -41,6 +41,7 @@ dependencies:
   carousel_slider: ^5.0.0
   skeletonizer: ^2.1.2
   razorpay_flutter: ^1.4.0
+  razorpay_web: ^1.4.0
   flutter_dotenv: ^6.0.0
   google_fonts: ^8.0.0
   intl: ^0.20.2
@@ -48,6 +49,14 @@ dependencies:
   
 
   url_launcher: any
+  model_viewer_plus: ^1.7.0
+  o3d: ^3.0.0
+  flutter_staggered_animations: ^1.0.0
+  glassmorphism_ui: ^0.3.0
+  provider: ^6.1.2
+  flutter_animate: ^4.5.2
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -92,7 +92,41 @@ class OrderDetailsScreen extends StatelessWidget {
                   ),
                   child: const Text(
                     "Cancel Order",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+
+            /// CONFIRM DELIVERY BUTTON (ONLY DELIVERED)
+            if (order.status == "DELIVERED")
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: ColorConst.primaryGradient,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(result: "confirm"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "Confirm Delivery",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -14,6 +14,7 @@ class OrderModel {
   final String? shippingAddress;
   final String? customerPhone;
   final String? deliveryPersonId;
+  final String? paymentId;
   final List<OrderItemModel> orderItems;
 
   OrderModel({
@@ -30,6 +31,7 @@ class OrderModel {
     this.shippingAddress,
     this.customerPhone,
     this.deliveryPersonId,
+    this.paymentId,
     this.orderItems = const [],
   });
 
@@ -44,10 +46,13 @@ class OrderModel {
           .toList();
     }
 
+    // Handle both 'status' and 'payment_status' column names
+    final statusValue = json['status'] ?? json['payment_status'];
+
     return OrderModel(
       id: json['id'].toString(),
       amount: (json['amount'] as num).toDouble(),
-      status: _parseStatus(json['payment_status']),
+      status: _parseStatus(statusValue),
       createdAt: DateTime.parse(json['created_at']),
       orderType: json['order_type']?.toString() ?? '',
       paymentMethod: json['payment_method']?.toString() ?? 'COD',
@@ -58,6 +63,7 @@ class OrderModel {
       shippingAddress: json['shipping_address']?.toString() ?? '',
       customerPhone: json['customer_phone']?.toString() ?? '',
       deliveryPersonId: json['delivery_person']?.toString(),
+      paymentId: json['payment_id']?.toString(),
       orderItems: items,
     );
   }
