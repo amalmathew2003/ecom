@@ -71,23 +71,47 @@ class _NeoProductCardState extends State<NeoProductCard> {
                     Positioned(
                       top: 15,
                       right: 15,
-                      child: AnimatedOpacity(
-                        opacity: isHovered ? 1.0 : 0.5,
-                        duration: const Duration(milliseconds: 300),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: isHovered
-                                ? NeoColors.accent
-                                : Colors.black45,
-                            shape: BoxShape.circle,
+                      child: Column(
+                        children: [
+                          AnimatedOpacity(
+                            opacity: isHovered ? 1.0 : 0.5,
+                            duration: const Duration(milliseconds: 300),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isHovered
+                                    ? NeoColors.accent
+                                    : Colors.black45,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.favorite_border_rounded,
+                                color: isHovered
+                                    ? Colors.white
+                                    : Colors.white70,
+                                size: 20,
+                              ),
+                            ),
                           ),
-                          child: Icon(
-                            Icons.favorite_border_rounded,
-                            color: isHovered ? Colors.white : Colors.white70,
-                            size: 20,
-                          ),
-                        ),
+                          if (widget.product.videoUrl != null) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ).animate().fadeIn().scale(),
+                          ],
+                        ],
                       ),
                     ),
                     if (isHovered)

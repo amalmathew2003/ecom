@@ -5,6 +5,7 @@ import 'package:ecom/features/user/home/controller/product_controller.dart';
 import 'package:ecom/features/user/home/controller/review_controller.dart';
 import 'package:ecom/shared/widgets/neo_product_card.dart';
 import 'package:ecom/features/user/home/ui/product_details/widget/full_screen_image_viewer.dart';
+import 'package:ecom/features/user/home/ui/product_details/widget/product_video_player.dart';
 import 'package:ecom/features/user/nav/controller/nav_controller.dart';
 import 'package:ecom/features/user/checkout/controller/checkout_controller.dart';
 import 'package:ecom/shared/models/product_model.dart';
@@ -13,7 +14,6 @@ import 'package:ecom/features/user/wishlist/controller/wishlist_controller.dart'
 import 'package:ecom/core/utils/responsive_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -185,15 +185,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     color: NeoColors.textLow,
                   ),
                 ),
-              Positioned(
-                bottom: 30,
-                right: 30,
-                child: _glassButton(
-                  "3D VIEW",
-                  Icons.view_in_ar_rounded,
-                  () => _show3DViewer(),
+              if (widget.product.videoUrl != null)
+                Positioned(
+                  bottom: 30,
+                  left: 30,
+                  child: _glassButton(
+                    "WATCH VIDEO",
+                    Icons.play_circle_fill_rounded,
+                    () => _showVideoPlayer(),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -539,15 +540,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                 ),
               ),
-            Positioned(
-              bottom: 30,
-              right: 30,
-              child: _glassButton(
-                "3D VIEW",
-                Icons.view_in_ar_rounded,
-                () => _show3DViewer(),
+            if (widget.product.videoUrl != null)
+              Positioned(
+                bottom: 30,
+                left: 30,
+                child: _glassButton(
+                  "WATCH VIDEO",
+                  Icons.play_circle_fill_rounded,
+                  () => _showVideoPlayer(),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -561,6 +563,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildMainInfo(),
+          if (widget.product.videoUrl != null) ...[
+            const SizedBox(height: 30),
+            ProductVideoPlayer(videoUrl: widget.product.videoUrl!),
+          ],
           const SizedBox(height: 40),
           _buildDescription(),
           const SizedBox(height: 32),
@@ -802,60 +808,28 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  void _show3DViewer() {
-    showModalBottomSheet(
+  void _showVideoPlayer() {
+    if (widget.product.videoUrl == null) return;
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.black,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
-      ),
-      builder: (context) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.85,
-        child: Column(
-          children: [
-            const SizedBox(height: 25),
-            Container(width: 40, height: 4, color: Colors.white24),
-            const SizedBox(height: 25),
-            Text(
-              "3D EXPLORER",
-              style: GoogleFonts.oswald(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-                fontSize: 20,
-              ),
-            ),
-            const Expanded(
-              child: ModelViewer(
-                src:
-                    'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-                alt: "3D Product",
-                ar: true,
-                autoRotate: true,
-                cameraControls: true,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(40),
-              child: ElevatedButton(
-                onPressed: () => Get.back(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: const RoundedRectangleBorder(),
-                ),
-                child: Text(
-                  "CLOSE",
-                  style: GoogleFonts.oswald(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(10),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Get.back(),
                 ),
               ),
-            ),
-          ],
+              ProductVideoPlayer(videoUrl: widget.product.videoUrl!),
+            ],
+          ),
         ),
       ),
     );

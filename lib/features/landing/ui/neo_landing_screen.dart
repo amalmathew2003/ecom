@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:ecom/core/theme/neo_colors.dart';
@@ -265,45 +264,43 @@ class NeoLandingScreen extends StatelessWidget {
   }
 
   Widget _hero3DElement() {
-    // Using a different model or keeping the astronaut but wrapped in glich effects
     return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Glow behind
-        Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: NeoColors.accent.withOpacity(0.1),
-                boxShadow: [
-                  BoxShadow(
-                    color: NeoColors.accent.withOpacity(0.2),
-                    blurRadius: 100,
-                    spreadRadius: 20,
+          alignment: Alignment.center,
+          children: [
+            // Glow behind
+            Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: NeoColors.accent.withOpacity(0.1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: NeoColors.accent.withOpacity(0.2),
+                        blurRadius: 100,
+                        spreadRadius: 20,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
-            .animate(onPlay: (c) => c.repeat(reverse: true))
-            .scale(
-              begin: const Offset(0.8, 0.8),
-              end: const Offset(1.2, 1.2),
-              duration: const Duration(seconds: 3),
-            ),
+                )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .scale(
+                  begin: const Offset(0.8, 0.8),
+                  end: const Offset(1.2, 1.2),
+                  duration: const Duration(seconds: 3),
+                ),
 
-        const ModelViewer(
-          src:
-              'https://modelviewer.dev/shared-assets/models/MaterialsVariantsShoe.glb',
-          alt: "Neo Sneaker",
-          autoRotate: true,
-          cameraControls: false,
-          disableZoom: true,
-          backgroundColor: Colors.transparent,
-          rotationPerSecond: "20deg",
-        ),
-      ],
-    ).animate(delay: 200.ms).fadeIn(duration: const Duration(seconds: 1)).scale();
+            // Stylized Icon/Image instead of 3D Model
+            Icon(
+              Icons.shopping_bag_outlined,
+              size: 150,
+              color: NeoColors.accent.withOpacity(0.8),
+            ).animate().shimmer(duration: 2000.ms).fadeIn(),
+          ],
+        )
+        .animate(delay: 200.ms)
+        .fadeIn(duration: const Duration(seconds: 1))
+        .scale();
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 
 class AdminAddProductPage extends StatelessWidget {
   AdminAddProductPage({super.key});
@@ -23,13 +24,22 @@ class AdminAddProductPage extends StatelessWidget {
 
   final RxnString selectedCategoryId = RxnString();
   final RxnString selectedSubCategoryId = RxnString();
-  final RxList<File> selectedImages = <File>[].obs;
+  final RxList<XFile> selectedImages = <XFile>[].obs;
+  final Rxn<XFile> selectedVideo = Rxn<XFile>();
 
   Future<void> pickImages() async {
     final picker = ImagePicker();
     final images = await picker.pickMultiImage(imageQuality: 80);
     if (images.isNotEmpty) {
-      selectedImages.assignAll(images.map((e) => File(e.path)).toList());
+      selectedImages.assignAll(images);
+    }
+  }
+
+  Future<void> pickVideo() async {
+    final picker = ImagePicker();
+    final video = await picker.pickVideo(source: ImageSource.gallery);
+    if (video != null) {
+      selectedVideo.value = video;
     }
   }
 
@@ -53,6 +63,10 @@ class AdminAddProductPage extends StatelessWidget {
                     _sectionTitle("PRODUCT GALLERY"),
                     const SizedBox(height: 15),
                     _buildImagePicker(),
+                    const SizedBox(height: 20),
+                    _sectionTitle("PRODUCT VIDEO"),
+                    const SizedBox(height: 15),
+                    _buildVideoPicker(),
                     const SizedBox(height: 40),
                     _sectionTitle("SPECIFICATIONS"),
                     const SizedBox(height: 20),
@@ -95,6 +109,89 @@ class AdminAddProductPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildVideoPicker() {
+    return Obx(() {
+      return GestureDetector(
+        onTap: pickVideo,
+        child: Container(
+          height: 120,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: NeoColors.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.05), width: 2),
+          ),
+          child: selectedVideo.value == null
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.video_call_rounded,
+                      size: 30,
+                      color: Colors.purpleAccent.withOpacity(0.5),
+                    ),
+                    const SizedBox(width: 15),
+                    Text(
+                      "UPLOAD MOTION ASSET",
+                      style: GoogleFonts.oswald(
+                        color: NeoColors.textLow,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                )
+              : Stack(
+                  children: [
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.movie_creation_outlined,
+                            color: Colors.purpleAccent,
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              selectedVideo.value!.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                color: NeoColors.textHigh,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: () => selectedVideo.value = null,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      );
+    });
   }
 
   Widget _sectionTitle(String title) {
@@ -160,12 +257,19 @@ class AdminAddProductPage extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: Image.file(
-              selectedImages[index],
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
+            child: kIsWeb
+                ? Image.network(
+                    selectedImages[index].path,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  )
+                : Image.file(
+                    File(selectedImages[index].path),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
           ),
           Positioned(
             top: 10,
@@ -484,6 +588,7 @@ class AdminAddProductPage extends StatelessWidget {
       description: descCtrl.text.trim(),
       price: double.parse(priceCtrl.text.trim()),
       images: selectedImages,
+      video: selectedVideo.value,
       categoryId: selectedCategoryId.value!,
       subCategoryId: selectedSubCategoryId.value!,
       stock: stock,

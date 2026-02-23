@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 
 class AdminEditProductPage extends StatefulWidget {
   final String productId;
@@ -26,7 +27,8 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
   late TextEditingController priceCtrl;
   late TextEditingController stockCtrl;
 
-  File? selectedImage;
+  XFile? selectedImage;
+  XFile? selectedVideo;
   int currentImageIndex = 0;
 
   final productCtrl = Get.find<AdminProductController>();
@@ -46,7 +48,14 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
   Future<void> pickImage() async {
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      setState(() => selectedImage = File(picked.path));
+      setState(() => selectedImage = picked);
+    }
+  }
+
+  Future<void> pickVideo() async {
+    final picked = await picker.pickVideo(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() => selectedVideo = picked);
     }
   }
 
@@ -72,8 +81,10 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
       price: double.parse(priceCtrl.text.trim()),
       stock: stock,
       newimage: selectedImage,
+      newVideo: selectedVideo,
       imageIndex: currentImageIndex,
       imageUrl: product.imageUrl,
+      currentVideoUrl: product.videoUrl,
       categoryId: product.categoryId,
       subCategoryId: product.subCategoryId,
     );
@@ -188,7 +199,12 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
             child: selectedImage != null
-                ? Image.file(selectedImage!, fit: BoxFit.cover)
+                ? (kIsWeb
+                      ? Image.network(selectedImage!.path, fit: BoxFit.cover)
+                      : Image.file(
+                          File(selectedImage!.path),
+                          fit: BoxFit.cover,
+                        ))
                 : PageView.builder(
                     itemCount: images.length,
                     onPageChanged: (i) => setState(() => currentImageIndex = i),
@@ -218,14 +234,50 @@ class _AdminEditProductPageState extends State<AdminEditProductPage> {
                   if (picked == null) return;
                   await productCtrl.addimagetoProduct(
                     productId: product.id,
-                    newImage: File(picked.path),
+                    newImage: picked,
                     existingImage: product.imageUrl,
                   );
                 },
               ),
+              const SizedBox(width: 12),
+              _circleActionButton(
+                icon: Icons.movie_creation_rounded,
+                color: Colors.orangeAccent,
+                onTap: pickVideo,
+              ),
             ],
           ),
         ),
+        if (selectedVideo != null)
+          Positioned(
+            top: 20,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.movie_outlined,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    "NEW VIDEO READY",
+                    style: GoogleFonts.oswald(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

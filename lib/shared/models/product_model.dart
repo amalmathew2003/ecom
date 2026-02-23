@@ -10,12 +10,15 @@ class ProductModel {
   final double rating;
   final int ratingCount;
 
+  final String? videoUrl;
+
   ProductModel({
     required this.id,
     required this.name,
     required this.description,
     required this.price,
     required this.imageUrl,
+    this.videoUrl,
     required this.categoryId,
     required this.subCategoryId,
     required this.stock,
@@ -32,8 +35,9 @@ class ProductModel {
       imageUrl: json['image_url'] == null
           ? []
           : List<String>.from(json['image_url']),
-      categoryId: json['category_id'],
-      subCategoryId: json['sub_category_id'],
+      videoUrl: json['video_url'],
+      categoryId: json['category_id']?.toString() ?? '',
+      subCategoryId: json['sub_category_id']?.toString() ?? '',
       stock: json['stock'] ?? 0,
       rating: (json['rating'] ?? 0).toDouble(),
       ratingCount: json['rating_count'] ?? 0,
@@ -46,6 +50,7 @@ class ProductModel {
       price: 0,
       description: '',
       imageUrl: [''],
+      videoUrl: null,
       stock: 0,
       rating: 0,
       ratingCount: 0,
